@@ -129,8 +129,13 @@ class EvalContext:
         assert os.path.exists(filePath), "[ERROR] : File %s not found !" % filePath
 
         # Load file data
-        with open(filePath, 'rb') as f:
-            self.ocrOriginal, self.ocrAligned, self.gsAligned = [txt[14:] for txt in re.split(r"\r?\n", f.read().decode("utf-8"))]
+        with open(filePath, 'r') as f:
+            text = f.read().strip()
+            self.ocrOriginal, self.ocrAligned, self.gsAligned = [txt[14:] for txt in re.split(r"\r?\n", text)]
+
+            if self.charExtend in self.ocrOriginal:
+                print(f'{self.charExtend} found in ocrOriginal. Removing...')
+                self.ocrOriginal = self.ocrOriginal.replace(self.charExtend, '')
 
         # Check file integrity
         assert self.ocrOriginal == re.sub(self.charExtend, "", self.ocrAligned), "[ERROR] : [OCR_aligned] without \"%s\" doesn't correspond to [OCR_toInput] " % self.charExtend
