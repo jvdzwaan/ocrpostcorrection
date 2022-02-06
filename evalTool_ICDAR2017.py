@@ -128,6 +128,8 @@ class EvalContext:
 
         assert os.path.exists(filePath), "[ERROR] : File %s not found !" % filePath
 
+        self.filePath = filePath
+
         # Load file data
         with open(filePath, 'r') as f:
             text = f.read().strip()
@@ -157,7 +159,7 @@ class EvalContext:
     def get_aligned_token_bounds(self, tokenPos, nbToken=1):
 
         assert (tokenPos == 0) or (self.ocrOriginal[tokenPos-1] == " "), \
-            "[ERROR] : %d is not a token start position" % tokenPos
+            "[ERROR] : %d is not a token start position (%s)" % (tokenPos, self.filePath)
 
         alignedPos = tokenPos + self.get_aligned_shift(tokenPos)
         seqLen = nbToken-1 # Init with number of spaces
