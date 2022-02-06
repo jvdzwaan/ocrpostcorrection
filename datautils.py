@@ -34,20 +34,23 @@ class InputToken:
     ocr: str
     gs: str
     start: int
+    len_ocr: int
     label: int
 
 
 def get_input_tokens(aligned_token):
     if aligned_token.ocr == aligned_token.gs:
-            yield InputToken(aligned_token.ocr, aligned_token.gs, aligned_token.start, 0)
+            yield InputToken(aligned_token.ocr, aligned_token.gs,
+                             aligned_token.start, len(aligned_token.ocr), 0)
     else:
         parts = aligned_token.ocr.split(' ')
         new_start = aligned_token.start
         for i, part in enumerate(parts):
             if i == 0:
-                yield InputToken(part, aligned_token.gs, aligned_token.start, 1)
+                yield InputToken(part, aligned_token.gs, aligned_token.start,
+                                 len(part), 1)
             else:
-                yield InputToken(part, '', new_start, 2)
+                yield InputToken(part, '', new_start, len(part), 2)
             new_start += len(part) + 1
 
 
@@ -65,7 +68,8 @@ def tokenize_aligned(ocr_aligned, gs_aligned):
 
     for ocr_aligned_char, gs_aligned_char in zip(ocr_aligned, gs_aligned):
         #print(ocr_aligned_char, gs_aligned_char, ocr_cursor)
-        if ocr_aligned_char != '@' and ocr_aligned_char != '#':
+        # The # character in ocr is not an aligment character!
+        if ocr_aligned_char != '@':
             ocr_cursor += 1
 
         if ocr_aligned_char == ' ' and gs_aligned_char == ' ':
@@ -75,13 +79,13 @@ def tokenize_aligned(ocr_aligned, gs_aligned):
             #print('start:', start_char)
             #ocr_cursor += 1
 
-            # Ignore 'tokens' without representation in the ocr text 
-            # (these tokens do not consist of characters) 
+            # Ignore 'tokens' without representation in the ocr text
+            # (these tokens do not consist of characters)
             ocr = (''.join(ocr_token_chars)).strip()
             if ocr != '':
-                tokens.append(AlignedToken(ocr, 
-                                          ''.join(gs_token_chars), 
-                                          ''.join(ocr_token_chars_aligned), 
+                tokens.append(AlignedToken(ocr,
+                                          ''.join(gs_token_chars),
+                                          ''.join(ocr_token_chars_aligned),
                                           ''.join(gs_token_chars_aligned),
                                           start,
                                           len(''.join(ocr_token_chars))))
@@ -94,16 +98,17 @@ def tokenize_aligned(ocr_aligned, gs_aligned):
         else:
             ocr_token_chars_aligned.append(ocr_aligned_char)
             gs_token_chars_aligned.append(gs_aligned_char)
-            if ocr_aligned_char != '@' and ocr_aligned_char != '#':
+            # The # character in ocr is not an aligment character!
+            if ocr_aligned_char != '@':
                 ocr_token_chars.append(ocr_aligned_char)
             if gs_aligned_char != '@' and gs_aligned_char != '#':
                 gs_token_chars.append(gs_aligned_char)
-    
+
     ocr = (''.join(ocr_token_chars)).strip()
     if ocr != '':
-        tokens.append(AlignedToken(ocr, 
-                                   ''.join(gs_token_chars), 
-                                   ''.join(ocr_token_chars_aligned), 
+        tokens.append(AlignedToken(ocr,
+                                   ''.join(gs_token_chars),
+                                   ''.join(ocr_token_chars_aligned),
                                    ''.join(gs_token_chars_aligned),
                                    start,
                                    len(''.join(ocr_token_chars))))
@@ -143,7 +148,9 @@ def process_text(in_file):
     with open(in_file) as f:
         lines = f.readlines()
 
-    ocr_input = clean(remove_label_and_nl(lines[0]))
+    # The # character in ocr input is not an aligment character, but the @
+    # character is!
+    ocr_input = remove_label_and_nl(lines[0]).replace('@', '')
     ocr_aligned = remove_label_and_nl(lines[1])
     gs_aligned = remove_label_and_nl(lines[2])
 
@@ -159,7 +166,7 @@ def process_text(in_file):
         try:
             assert token.ocr == input_token.strip()
         except AssertionError:
-            print(f'Text: {str(in_file)}; ocr: {repr(token.ocr)}; ocr_input: {repr(input_token)}')
+            logger.warning(f'OCR != aligned OCR: Text: {str(in_file)}; ocr: {repr(token.ocr)}; ocr_input: {repr(input_token)}')
             raise
 
     ocr = clean(ocr_aligned)
@@ -176,7 +183,7 @@ def process_text(in_file):
     for token in tokens:
         for inp_tok in get_input_tokens(token):
             input_tokens.append(inp_tok)
-    
+
     return Text(tokens, input_tokens, score)
 
 
@@ -193,7 +200,7 @@ def generate_data(in_dir):
     for language_dir in tqdm(in_dir.iterdir()):
         #print(language_dir.stem)
         language = language_dir.stem
-        
+
         for text_file in language_dir.rglob('*.txt'):
             #print(text_file)
             #print(text_file.relative_to(in_dir))
@@ -205,7 +212,7 @@ def generate_data(in_dir):
             scores.append(data[key].score)
             num_tokens.append(len(data[key].tokens))
             num_input_tokens.append(len(data[key].input_tokens))
-    md = pd.DataFrame({'language': file_languages, 
+    md = pd.DataFrame({'language': file_languages,
                     'file_name': file_names,
                     'score': scores,
                     'num_tokens': num_tokens,
