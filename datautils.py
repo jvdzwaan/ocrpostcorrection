@@ -132,6 +132,7 @@ def window(iterable, size=2):
 
 @dataclass
 class Text:
+    ocr_text: str
     tokens: list
     input_tokens: list
     score: float
@@ -184,7 +185,7 @@ def process_text(in_file):
         for inp_tok in get_input_tokens(token):
             input_tokens.append(inp_tok)
 
-    return Text(tokens, input_tokens, score)
+    return Text(ocr_input, tokens, input_tokens, score)
 
 
 def generate_data(in_dir):
