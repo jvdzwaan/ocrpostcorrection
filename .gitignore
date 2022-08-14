@@ -127,10 +127,7 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
-<<<<<<< HEAD
 
 .DS_Store
 
 *.icloud
-=======
->>>>>>> c5a5967a5c19139f3ae116c4c2579cfba813753a
