@@ -18,8 +18,6 @@ website:
   title: "ocrpostcorrection"
   site-url: "https://jvdzwaan.github.io/ocrpostcorrection/"
   description: "A Python package for doing OCR post correction"
-  execute: 
-    enabled: false
   twitter-card: true
   open-graph: true
   reader-mode: true
