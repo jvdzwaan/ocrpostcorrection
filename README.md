@@ -19,6 +19,8 @@ pip install -e .
 ## How to use
 
 In addition to the package, this repository provided two sets of
-notebooks: \* `local` notebooks to be run locally, e.g., for generating
-datasets \* `colab` notebooks to be run on machines with a GPU, e.g.,
-for training neural networks
+notebooks:
+
+-   `local` notebooks to be run locally, e.g., for generating datasets
+-   `colab` notebooks to be run on machines with a GPU, e.g., for
+    training neural networks
