@@ -28,4 +28,6 @@ d = { 'settings': { 'branch': 'main',
                                               'ocrpostcorrection.icdar_data.tokenize_aligned': ( 'https://jvdzwaan.github.io/ocrpostcorrection/icdar_data.html#tokenize_aligned',
                                                                                                  'https://github.com/jvdzwaan/ocrpostcorrection//blob/main/ocrpostcorrection/icdar_data.py#L33'),
                                               'ocrpostcorrection.icdar_data.window': ( 'https://jvdzwaan.github.io/ocrpostcorrection/icdar_data.html#window',
-                                                                                       'https://github.com/jvdzwaan/ocrpostcorrection//blob/main/ocrpostcorrection/icdar_data.py#L232')}}}
+                                                                                       'https://github.com/jvdzwaan/ocrpostcorrection//blob/main/ocrpostcorrection/icdar_data.py#L232')},
+            'ocrpostcorrection.task1_token_classification': { 'ocrpostcorrection.task1_token_classification.tokenize_and_align_labels_with_tokenizer': ( 'https://jvdzwaan.github.io/ocrpostcorrection/tasktoken_classification.html#tokenize_and_align_labels_with_tokenizer',
+                                                                                                                                                         'https://github.com/jvdzwaan/ocrpostcorrection//blob/main/ocrpostcorrection/task1_token_classification.py#L17')}}}
