@@ -3,4 +3,6 @@ website:
     contents:
       - index.ipynb
       - 00_icdar_data.ipynb
-      - 01_task1_token_classification.ipynb
+      - 01_token_classification.ipynb
+      - 02_error_correction.ipynb
+      - 03_results.ipynb
