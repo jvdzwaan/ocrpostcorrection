@@ -15,6 +15,9 @@ tokenizer = AutoTokenizer.from_pretrained(bert_base_model_name)
 
 # %% ../nbs/01_token_classification.ipynb 4
 def tokenize_and_align_labels_with_tokenizer(tokenizer, examples):
+    """Tokenize function, to be used as partial with instatiated tokenizer
+    
+    This partial is available as `tokenize_and_align_labels(examples)`"""
     # Source: https://huggingface.co/docs/transformers/custom_datasets#token-classification-with-wnut-emerging-entities
     tokenized_inputs = tokenizer(examples["tokens"], truncation=True, is_split_into_words=True)
 
