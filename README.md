@@ -24,3 +24,18 @@ notebooks:
 -   `local` notebooks to be run locally, e.g., for generating datasets
 -   `colab` notebooks to be run on machines with a GPU, e.g., for
     training neural networks
+
+<!-- -->
+
+    ocrpostcorrection
+    ├── LICENSE
+    ├── MANIFEST.in
+    ├── README.md
+    ├── colab
+    │   └── icdar-task1-hf-train.ipynb        <- Train Huggingface BERT model for task 1
+    ├── local
+    │   └── icdar-create-hf-dataset.ipynb     <- Create Huggingface dataset from the icdar data
+    ├── nbs                                   <- nbdev notebook directory
+    ├── ocrpostcorrection                     <- Generated package code
+    ├── settings.ini
+    └── setup.py
