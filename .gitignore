@@ -134,4 +134,5 @@ dmypy.json
 
 # nbdev
 _docs/
+_proc/
 .quarto
