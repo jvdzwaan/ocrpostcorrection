@@ -228,8 +228,9 @@ def generate_data(in_dir: Path):
     return data, md
 
 
-# %% ../nbs/00_icdar_data.ipynb 30
+# %% ../nbs/00_icdar_data.ipynb 31
 def window(iterable, size=2):
+    """Given an iterable, return all subsequences of a certain size"""
     i = iter(iterable)
     win = []
     for e in range(0, size):
@@ -242,8 +243,9 @@ def window(iterable, size=2):
         win = win[1:] + [e]
         yield win
 
-# %% ../nbs/00_icdar_data.ipynb 31
+# %% ../nbs/00_icdar_data.ipynb 32
 def generate_sentences(df, data, size=15, step=10):
+    """Generate sequences of a certain length and possible overlap"""
     sents = []
     labels = []
     keys = []
