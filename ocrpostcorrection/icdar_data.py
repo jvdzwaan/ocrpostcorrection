@@ -228,7 +228,7 @@ def generate_data(in_dir: Path):
     return data, md
 
 
-# %% ../nbs/00_icdar_data.ipynb 31
+# %% ../nbs/00_icdar_data.ipynb 32
 def window(iterable, size=2):
     """Given an iterable, return all subsequences of a certain size"""
     i = iter(iterable)
@@ -243,7 +243,35 @@ def window(iterable, size=2):
         win = win[1:] + [e]
         yield win
 
-# %% ../nbs/00_icdar_data.ipynb 32
+# %% ../nbs/00_icdar_data.ipynb 34
+def _process_sequence(key, i, res, sents, labels, keys, start_tokens, scores, languages):
+    ocr = [t.ocr for t in res]
+    lbls = [t.label for t in res]
+    gs = []
+    for t in res:
+        if t.gs != '':
+            gs.append(t.gs)
+    ocr_str = ' '.join(ocr)
+    gs_str = ' '.join(gs)
+    ed = edlib.align(ocr_str, gs_str)['editDistance']
+    score = normalized_ed(ed, ocr_str, gs_str)
+
+    if len(ocr_str) > 0:
+
+        sents.append(ocr)
+        labels.append(lbls)
+        keys.append(key)
+        start_tokens.append(i)
+        scores.append(score)
+        languages.append(key[:2])
+    else:
+        logger.info(f'Empty sample for text "{key}"')
+        logger.info(f'ocr_str: {ocr_str}')
+        logger.info(f'start token: {i}')
+        
+    return (sents, labels, keys, start_tokens, scores, languages)
+
+
 def generate_sentences(df, data, size=15, step=10):
     """Generate sequences of a certain length and possible overlap"""
     sents = []
@@ -261,29 +289,13 @@ def generate_sentences(df, data, size=15, step=10):
         # print(key)
         for i, res in enumerate(window(tokens, size=size)):
             if i % step == 0:
-                ocr = [t.ocr for t in res]
-                lbls = [t.label for t in res]
-                gs = []
-                for t in res:
-                    if t.gs != '':
-                        gs.append(t.gs)
-                ocr_str = ' '.join(ocr)
-                gs_str = ' '.join(gs)
-                ed = edlib.align(ocr_str, gs_str)['editDistance']
-                score = normalized_ed(ed, ocr_str, gs_str)
+                (sents, labels, keys, start_tokens, scores, languages) = \
+                    _process_sequence(key, i, res, sents, labels, keys, start_tokens, 
+                                      scores, languages)
+        # Add final sequence
+        (sents, labels, keys, start_tokens, scores, languages) = \
+            _process_sequence(key, i, res, sents, labels, keys, start_tokens, scores, languages)
 
-                if len(ocr_str) > 0:
-
-                    sents.append(ocr)
-                    labels.append(lbls)
-                    keys.append(key)
-                    start_tokens.append(i)
-                    scores.append(score)
-                    languages.append(key[:2])
-                else:
-                    logger.info(f'Empty sample for text "{key}"')
-                    logger.info(f'ocr_str: {ocr_str}')
-                    logger.info(f'start token: {i}')
     data = pd.DataFrame({
         'key': keys,
         'start_token_id': start_tokens,
@@ -292,5 +304,9 @@ def generate_sentences(df, data, size=15, step=10):
         'tags': labels,
         'language': languages
     })
+
+    # Adding the final sequence may lead to duplicate rows. Remove thos
+    data.drop_duplicates(subset=['key', 'start_token_id'], 
+                         keep='first', inplace=True, ignore_index=True)
 
     return data

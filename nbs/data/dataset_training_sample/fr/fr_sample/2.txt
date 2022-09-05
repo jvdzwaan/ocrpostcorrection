@@ -1,0 +1,3 @@
+[OCR_toInput] test- AAA test-BBB test-CCC test -DDD test- EEE test-FFF test-GGG test - HHH test-III test - JJJ blablabla ?
+[OCR_aligned] test- AAA test@-BBB test-@CCC test -DDD test- EEE test-@FFF test@-GGG test - HHH test@-@III test - JJJ blablabla ?
+[ GS_aligned] test-.AAA test- BBB test- CCC test  DDD test-@EEE test- FFF test -GGG test@-@HHH test - III test - JJJ blablabla !

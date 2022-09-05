@@ -1,0 +1,3 @@
+[OCR_toInput] BRAENTSAX DEDA CHANSON -DE GESTEDE GIRBERT DE METZ Nous avtrouvé lesmanuscrit ?
+[OCR_aligned] BRA@@ENTSAX DEDA CHANSON -DE GESTE@DE GIRBERT DE METZ Nous avtrouvé@@@@@@@ lesmanuscrit ?
+[ GS_aligned] FRAGMENT@@@ DADA CHANSON ### GESTE@DE@GIRBERT DE METZ Nous avons@@@ trouvé le manuscrit !

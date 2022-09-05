@@ -1,0 +1,3 @@
+[OCR_toInput] In botany, a troe is a peremial plant with an eLngated stein, or trunk, suppor ing branches and leaves in nest species! Test -hyhen with error 1 2 A B C 34 sqsd
+[OCR_aligned] In botany, a troe is a perem@ial plant with an eL@ngated stein, or trunk, suppor ing branches and leaves in nest species! Test -hyhen with error@ 1 2 A B C@@ 3@4 sqsd
+[ GS_aligned] ## botany, a tree is a perennial plant with an elongated stem@, ########, supporting branches and leaves in most species. Test@@hyhen with errors 1 2 A B CCC 3 4 sqsd
