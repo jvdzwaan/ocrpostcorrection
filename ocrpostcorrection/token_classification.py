@@ -41,7 +41,7 @@ def tokenize_and_align_labels_with_tokenizer(tokenizer, examples):
     return tokenized_inputs
 
 # %% ../nbs/01_token_classification.ipynb 7
-def tokenize_and_align_labels(examples):
+def tokenize_and_align_labels(tokenizer):
     """Function to tokenize samples and align the labels"""""
     return partial(tokenize_and_align_labels_with_tokenizer, tokenizer)
 
