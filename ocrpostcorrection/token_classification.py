@@ -14,7 +14,7 @@ import numpy as np
 from loguru import logger
 from transformers import AutoTokenizer
 
-# %% ../nbs/01_token_classification.ipynb 6
+# %% ../nbs/01_token_classification.ipynb 5
 def tokenize_and_align_labels_with_tokenizer(tokenizer, examples):
     """Tokenize function, to be used as partial with instatiated tokenizer"""
     # Source: https://huggingface.co/docs/transformers/custom_datasets#token-classification-with-wnut-emerging-entities
@@ -37,16 +37,16 @@ def tokenize_and_align_labels_with_tokenizer(tokenizer, examples):
 
     return tokenized_inputs
 
-# %% ../nbs/01_token_classification.ipynb 7
+# %% ../nbs/01_token_classification.ipynb 6
 def tokenize_and_align_labels(tokenizer):
     """Function to tokenize samples and align the labels"""""
     return partial(tokenize_and_align_labels_with_tokenizer, tokenizer)
 
-# %% ../nbs/01_token_classification.ipynb 9
+# %% ../nbs/01_token_classification.ipynb 8
 def predictions_to_labels(predictions):
     return np.argmax(predictions, axis=2)
 
-# %% ../nbs/01_token_classification.ipynb 12
+# %% ../nbs/01_token_classification.ipynb 11
 def separate_subtoken_predictions(word_ids, preds):
     #print(len(word_ids), word_ids)
     result = defaultdict(list)
@@ -57,7 +57,7 @@ def separate_subtoken_predictions(word_ids, preds):
     return dict(result)
 
 
-# %% ../nbs/01_token_classification.ipynb 14
+# %% ../nbs/01_token_classification.ipynb 13
 def merge_subtoken_predictions(subtoken_predictions):
     token_level_predictions = []
     for word_idx, preds in subtoken_predictions.items():
@@ -72,7 +72,7 @@ def merge_subtoken_predictions(subtoken_predictions):
         token_level_predictions.append(token_label)
     return token_level_predictions
 
-# %% ../nbs/01_token_classification.ipynb 16
+# %% ../nbs/01_token_classification.ipynb 15
 def gather_token_predictions(preds):
     """Gather potentially overlapping token predictions"""
     labels = defaultdict(list)
@@ -86,7 +86,7 @@ def gather_token_predictions(preds):
     #print(labels)
     return dict(labels)
 
-# %% ../nbs/01_token_classification.ipynb 18
+# %% ../nbs/01_token_classification.ipynb 17
 def labels2label_str(labels):
     label_str = []
 
@@ -101,7 +101,7 @@ def labels2label_str(labels):
     label_str = ''.join(label_str)
     return label_str
 
-# %% ../nbs/01_token_classification.ipynb 20
+# %% ../nbs/01_token_classification.ipynb 19
 def extract_icdar_output(label_str, input_tokens):
     #print(label_str, input_tokens)
     #print(len(label_str), len(input_tokens))
@@ -130,7 +130,7 @@ def extract_icdar_output(label_str, input_tokens):
     
     return text_output
 
-# %% ../nbs/01_token_classification.ipynb 26
+# %% ../nbs/01_token_classification.ipynb 25
 def predictions2icdar_output(samples, predictions, tokenizer, data_test):
     """Convert predictions into icdar output format"""
     #print('samples', len(samples))
@@ -181,7 +181,7 @@ def predictions2icdar_output(samples, predictions, tokenizer, data_test):
 
     return output
 
-# %% ../nbs/01_token_classification.ipynb 28
+# %% ../nbs/01_token_classification.ipynb 27
 def create_perfect_icdar_output(data):
     output = {}
     for key, text_obj in data.items():
