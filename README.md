@@ -31,11 +31,14 @@ notebooks:
     ├── LICENSE
     ├── MANIFEST.in
     ├── README.md
-    ├── colab
+    ├── colab                                 <- Notebooks to be run on GPU
+    │   ├── icdar-task1-hf-evaluation.ipynb   <- Evaluate Huggingface BERT model for task 1
     │   └── icdar-task1-hf-train.ipynb        <- Train Huggingface BERT model for task 1
-    ├── local
+    ├── local                                 <- Notebooks to be run locally
     │   └── icdar-create-hf-dataset.ipynb     <- Create Huggingface dataset from the icdar data
     ├── nbs                                   <- nbdev notebook directory
     ├── ocrpostcorrection                     <- Generated package code
+    ├── scripts
+    │   └── evalTool_ICDAR2017.py             <- ICDAR results evaluation script
     ├── settings.ini
     └── setup.py
