@@ -2,7 +2,8 @@
 
 # %% auto 0
 __all__ = ['predictions_to_labels', 'separate_subtoken_predictions', 'merge_subtoken_predictions', 'gather_token_predictions',
-           'labels2label_str', 'extract_icdar_output', 'predictions2icdar_output', 'create_perfect_icdar_output']
+           'labels2label_str', 'extract_icdar_output', 'predictions2icdar_output', 'create_perfect_icdar_output',
+           'aggregate_results']
 
 # %% ../nbs/03_utils.ipynb 2
 import re
@@ -10,6 +11,8 @@ from functools import partial
 from collections import defaultdict, Counter
 
 import numpy as np
+import pandas as pd
+
 from loguru import logger
 from transformers import AutoTokenizer
 
@@ -159,3 +162,11 @@ def create_perfect_icdar_output(data):
         label_str = ''.join([str(t.label) for t in text_obj.input_tokens])
         output[key] = extract_icdar_output(label_str, data[key].input_tokens)
     return output
+
+# %% ../nbs/03_utils.ipynb 27
+def aggregate_results(csv_file):
+    data = pd.read_csv(csv_file, sep=';')
+    data['language'] = data.File.apply(lambda x: x[:2])
+    data['subset'] = data.File.apply(lambda x: x.split('/')[1])
+
+    return data.groupby('language').mean()[['T1_Precision', 'T1_Recall', 'T1_Fmesure']]
