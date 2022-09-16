@@ -3,7 +3,7 @@
 # %% auto 0
 __all__ = ['predictions_to_labels', 'separate_subtoken_predictions', 'merge_subtoken_predictions', 'gather_token_predictions',
            'labels2label_str', 'extract_icdar_output', 'predictions2icdar_output', 'create_perfect_icdar_output',
-           'aggregate_results']
+           'aggregate_results', 'reduce_dataset']
 
 # %% ../nbs/03_utils.ipynb 2
 import re
@@ -170,3 +170,10 @@ def aggregate_results(csv_file):
     data['subset'] = data.File.apply(lambda x: x.split('/')[1])
 
     return data.groupby('language').mean()[['T1_Precision', 'T1_Recall', 'T1_Fmesure']]
+
+# %% ../nbs/03_utils.ipynb 29
+def reduce_dataset(dataset, n=5):
+    """Return dataset with the first n samples for each split"""
+    for split in dataset.keys():
+        dataset[split] = dataset[split].select(range(n))
+    return dataset

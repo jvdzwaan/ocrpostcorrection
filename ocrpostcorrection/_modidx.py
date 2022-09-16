@@ -51,5 +51,7 @@ d = { 'settings': { 'branch': 'main',
                                                                                                'ocrpostcorrection/utils.py'),
                                          'ocrpostcorrection.utils.predictions_to_labels': ( 'utils.html#predictions_to_labels',
                                                                                             'ocrpostcorrection/utils.py'),
+                                         'ocrpostcorrection.utils.reduce_dataset': ( 'utils.html#reduce_dataset',
+                                                                                     'ocrpostcorrection/utils.py'),
                                          'ocrpostcorrection.utils.separate_subtoken_predictions': ( 'utils.html#separate_subtoken_predictions',
                                                                                                     'ocrpostcorrection/utils.py')}}}
