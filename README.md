@@ -38,7 +38,5 @@ notebooks:
     │   └── icdar-create-hf-dataset.ipynb     <- Create Huggingface dataset from the icdar data
     ├── nbs                                   <- nbdev notebook directory
     ├── ocrpostcorrection                     <- Generated package code
-    ├── scripts
-    │   └── evalTool_ICDAR2017.py             <- ICDAR results evaluation script
     ├── settings.ini
     └── setup.py
