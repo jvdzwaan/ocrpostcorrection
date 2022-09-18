@@ -136,3 +136,4 @@ dmypy.json
 _docs/
 _proc/
 .quarto
+.last_checked
