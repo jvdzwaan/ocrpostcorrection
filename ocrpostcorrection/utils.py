@@ -68,21 +68,31 @@ def gather_token_predictions(preds):
     return dict(labels)
 
 # %% ../nbs/03_utils.ipynb 14
-def labels2label_str(labels):
+def labels2label_str(labels, text_key):
     label_str = []
+    i = 0
 
-    for i, token in enumerate(labels):
-        #print(i, token, labels[i])
+    for token in labels:
+        #print(i, token)
+        while i < token:
+            logger.warning(f'Missing predictions for token {i} in "{text_key}"')
+            # Predictions are missing (input text was truncated)
+            # Add 0 to make sure token indices remain correct 
+            label_str.append('0')
+            i += 1
+
         if 2 in labels[i]:
             label_str.append('2')
         elif 1 in labels[i]:
             label_str.append('1')
         else:
             label_str.append('0')
+        i += 1
+
     label_str = ''.join(label_str)
     return label_str
 
-# %% ../nbs/03_utils.ipynb 16
+# %% ../nbs/03_utils.ipynb 18
 def extract_icdar_output(label_str, input_tokens):
     #print(label_str, input_tokens)
     #print(len(label_str), len(input_tokens))
@@ -111,7 +121,7 @@ def extract_icdar_output(label_str, input_tokens):
     
     return text_output
 
-# %% ../nbs/03_utils.ipynb 22
+# %% ../nbs/03_utils.ipynb 24
 def predictions2icdar_output(samples, predictions, tokenizer, data_test):
     """Convert predictions into icdar output format"""
     #print('samples', len(samples))
@@ -152,8 +162,9 @@ def predictions2icdar_output(samples, predictions, tokenizer, data_test):
     for key, preds in converted.items():
         labels = defaultdict(list)
         #print(key)
-        labels = gather_token_predictions(preds)
-        label_str = labels2label_str(labels)
+        labels = gather_token_predictions(preds)        
+        label_str = labels2label_str(labels, key)
+        
         try:
             text = data_test[key]
             output[key] = extract_icdar_output(label_str, text.input_tokens)
@@ -162,7 +173,7 @@ def predictions2icdar_output(samples, predictions, tokenizer, data_test):
 
     return output
 
-# %% ../nbs/03_utils.ipynb 24
+# %% ../nbs/03_utils.ipynb 28
 def create_perfect_icdar_output(data):
     output = {}
     for key, text_obj in data.items():
@@ -170,12 +181,12 @@ def create_perfect_icdar_output(data):
         output[key] = extract_icdar_output(label_str, data[key].input_tokens)
     return output
 
-# %% ../nbs/03_utils.ipynb 27
+# %% ../nbs/03_utils.ipynb 31
 # For debugging purpose
 verbose = False
 maxNbCandidate = 6
 
-# %% ../nbs/03_utils.ipynb 28
+# %% ../nbs/03_utils.ipynb 32
 ################# CLASS FOR STORING CURRENT FILE CONTEXT  ################
 class EvalContext:
 
@@ -537,7 +548,7 @@ class EvalContext:
             print("%s:%s" % (str(k), str(d[k])))
 
 
-# %% ../nbs/03_utils.ipynb 29
+# %% ../nbs/03_utils.ipynb 33
 def runEvaluation(datasetDirPath,  # path to the dataset directory (ex: r"./dataset_sample")
                   pathInputJsonErrorsCorrections,  # # input path to the JSON result (ex: r"./inputErrCor_sample.json"), format given on https://sites.google.com/view/icdar2017-postcorrectionocr/evaluation)
                   pathOutputCsv):  # output path to the CSV evaluation results (ex: r"./outputEval.csv")
@@ -635,7 +646,7 @@ def runEvaluation(datasetDirPath,  # path to the dataset directory (ex: r"./data
         print(strRes.replace(";", "\t"))
 
 
-# %% ../nbs/03_utils.ipynb 31
+# %% ../nbs/03_utils.ipynb 35
 def aggregate_results(csv_file):
     data = pd.read_csv(csv_file, sep=';')
     data['language'] = data.File.apply(lambda x: x[:2])
@@ -643,7 +654,7 @@ def aggregate_results(csv_file):
 
     return data.groupby('language').mean()[['T1_Precision', 'T1_Recall', 'T1_Fmesure']]
 
-# %% ../nbs/03_utils.ipynb 33
+# %% ../nbs/03_utils.ipynb 37
 def reduce_dataset(dataset, n=5):
     """Return dataset with the first n samples for each split"""
     for split in dataset.keys():
