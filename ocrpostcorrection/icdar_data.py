@@ -120,7 +120,7 @@ def get_input_tokens(aligned_token: AlignedToken):
                 yield InputToken(part, '', new_start, len(part), 2)
             new_start += len(part) + 1
 
-# %% ../nbs/00_icdar_data.ipynb 21
+# %% ../nbs/00_icdar_data.ipynb 22
 @dataclass
 class Text:
     """Dataclass for storing a text in the ICDAR data format"""
@@ -129,7 +129,7 @@ class Text:
     input_tokens: list
     score: float
 
-# %% ../nbs/00_icdar_data.ipynb 22
+# %% ../nbs/00_icdar_data.ipynb 23
 def clean(string: str):
     """Remove alignment characters from a text"""
     string = string.replace('@', '')
@@ -137,7 +137,7 @@ def clean(string: str):
 
     return string
 
-# %% ../nbs/00_icdar_data.ipynb 23
+# %% ../nbs/00_icdar_data.ipynb 24
 def normalized_ed(ed: int, 
                   ocr: str, 
                   gs: str):
@@ -148,7 +148,7 @@ def normalized_ed(ed: int,
         score = ed / l
     return score
 
-# %% ../nbs/00_icdar_data.ipynb 24
+# %% ../nbs/00_icdar_data.ipynb 25
 def process_text(in_file: Path) -> Text:
     """Extract AlignedTokens, InputTokens from a text file and calculate normalized editdistance"""
     with open(in_file) as f:
@@ -193,7 +193,7 @@ def process_text(in_file: Path) -> Text:
     return Text(ocr_input, tokens, input_tokens, score)
 
 
-# %% ../nbs/00_icdar_data.ipynb 29
+# %% ../nbs/00_icdar_data.ipynb 30
 def generate_data(in_dir: Path):
     """Process all texts in the dataset and return a dataframe with metadata"""
 
@@ -228,7 +228,7 @@ def generate_data(in_dir: Path):
     return data, md
 
 
-# %% ../nbs/00_icdar_data.ipynb 32
+# %% ../nbs/00_icdar_data.ipynb 33
 def window(iterable, size=2):
     """Given an iterable, return all subsequences of a certain size"""
     i = iter(iterable)
@@ -243,7 +243,7 @@ def window(iterable, size=2):
         win = win[1:] + [e]
         yield win
 
-# %% ../nbs/00_icdar_data.ipynb 34
+# %% ../nbs/00_icdar_data.ipynb 35
 def _process_sequence(key, i, res, sents, labels, keys, start_tokens, scores, languages):
     ocr = [t.ocr for t in res]
     lbls = [t.label for t in res]
