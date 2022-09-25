@@ -3,7 +3,8 @@
 # %% auto 0
 __all__ = ['maxNbCandidate', 'predictions_to_labels', 'separate_subtoken_predictions', 'merge_subtoken_predictions',
            'gather_token_predictions', 'labels2label_str', 'extract_icdar_output', 'predictions2icdar_output',
-           'create_perfect_icdar_output', 'EvalContext', 'runEvaluation', 'aggregate_results', 'reduce_dataset']
+           'create_perfect_icdar_output', 'EvalContext', 'reshape_input_errors', 'runEvaluation', 'aggregate_results',
+           'reduce_dataset']
 
 # %% ../nbs/03_utils.ipynb 2
 import codecs
@@ -548,6 +549,54 @@ class EvalContext:
 
 
 # %% ../nbs/03_utils.ipynb 33
+def reshape_input_errors(tokenPosErr, evalContext, verbose=False):
+    # Store tokens' positions in mem
+    tokensPos = [0] + [spacePos.start() + 1 for spacePos in re.finditer(r"\ ", evalContext.ocrOriginal)]
+
+    # 1) Check JSON result format (ex: positions correspond to tokens)
+    # 2) Reshape data "pos":{"nbTokens":..., "boundsAligned":..., candidates:... }"
+    # 3) Locally normalize candidates' weights id needed
+    tokenPosErrReshaped = {}
+    for pos_nbtokens, candidates in tokenPosErr.items():
+
+        pos, nbOverlappingToken = [int(i) for i in pos_nbtokens.split(':')]
+        boundsAligned = evalContext.get_aligned_token_bounds(pos, nbOverlappingToken)
+
+        # Check pos targets a existing token (first char)
+        assert pos in tokensPos,\
+            "[ERROR] : Error at pos %s does not target the first char of a token (space separated sequences)." % pos
+
+        assert evalContext.ocrOriginal[pos:].count(" ") >= nbOverlappingToken-1,\
+            "[ERROR] : Error at pos %d spreads overs %d tokens which goes ouside the sequence." % (pos,nbOverlappingToken)
+
+        # Normalize candidates weights if needed
+        normCandidates = {}
+
+        # Limit the number of candiates
+        for k,v in sorted(candidates.items(), key=lambda kv: kv[1], reverse=True):
+            normCandidates[k] = v
+            if len(normCandidates) >= maxNbCandidate:
+                break
+
+        if len(normCandidates) > 0 and sum(normCandidates.values()) != 1:
+            print("[WARNING] : Normalizing weights at %s:%s" % (pos_nbtokens, str(normCandidates)) )
+            normCandidates = {cor: float(x)/sum(normCandidates.values()) for cor, x in normCandidates.items()}
+
+        tokenPosErrReshaped[pos] = {
+            "nbToken":nbOverlappingToken,
+            "boundsAligned":boundsAligned,
+            "ocrSeq":re.sub(evalContext.charExtend, "",evalContext.ocrAligned[boundsAligned[0]:boundsAligned[0]+boundsAligned[1]]),
+            "gsSeq":re.sub(evalContext.charExtend, "",evalContext.gsAligned[boundsAligned[0]:boundsAligned[0] + boundsAligned[1]]),
+            "candidates":normCandidates
+        }
+
+    # Debug test
+    if verbose:
+        EvalContext.printDicoSortedByKey(tokenPosErrReshaped, "tokenPosErrReshaped")
+
+    return tokenPosErrReshaped
+
+# %% ../nbs/03_utils.ipynb 36
 def runEvaluation(datasetDirPath,  # path to the dataset directory (ex: r"./dataset_sample")
                   pathInputJsonErrorsCorrections,  # # input path to the JSON result (ex: r"./inputErrCor_sample.json"), format given on https://sites.google.com/view/icdar2017-postcorrectionocr/evaluation)
                   pathOutputCsv,  # output path to the CSV evaluation results (ex: r"./outputEval.csv")
@@ -579,50 +628,7 @@ def runEvaluation(datasetDirPath,  # path to the dataset directory (ex: r"./data
         # Compute some intrinsic statistics
         nbTokens, nbErrTokens, nbErrTokensAlpha = evalContext.get_errors_stats()
 
-        # Store tokens' positions in mem
-        tokensPos = [0] + [spacePos.start() + 1 for spacePos in re.finditer(r"\ ", evalContext.ocrOriginal)]
-
-        # 1) Check JSON result format (ex: positions correspond to tokens)
-        # 2) Reshape data "pos":{"nbTokens":..., "boundsAligned":..., candidates:... }"
-        # 3) Locally normalize candidates' weights id needed
-        tokenPosErrReshaped = {}
-        for pos_nbtokens, candidates in tokenPosErr.items():
-
-            pos, nbOverlappingToken = [int(i) for i in pos_nbtokens.split(':')]
-            boundsAligned = evalContext.get_aligned_token_bounds(pos, nbOverlappingToken)
-
-            # Check pos targets a existing token (first char)
-            assert pos in tokensPos,\
-                "[ERROR] : Error at pos %s does not target the first char of a token (space separated sequences)." % pos
-
-            assert evalContext.ocrOriginal[pos:].count(" ") >= nbOverlappingToken-1,\
-                "[ERROR] : Error at pos %d spreads overs %d tokens which goes ouside the sequence." % (pos,nbOverlappingToken)
-
-            # Normalize candidates weights if needed
-            normCandidates = {}
-
-            # Limit the number of candiates
-            for k,v in sorted(candidates.items(), key=lambda kv: kv[1], reverse=True):
-                normCandidates[k] = v
-                if len(normCandidates) >= maxNbCandidate:
-                    break
-
-            if len(normCandidates) > 0 and sum(normCandidates.values()) != 1:
-                print("[WARNING] : Normalizing weights at %s:%s" % (pos_nbtokens, str(normCandidates)) )
-                normCandidates = {cor: float(x)/sum(normCandidates.values()) for cor, x in normCandidates.items()}
-
-            tokenPosErrReshaped[pos] = {
-                "nbToken":nbOverlappingToken,
-                "boundsAligned":boundsAligned,
-                "ocrSeq":re.sub(evalContext.charExtend, "",evalContext.ocrAligned[boundsAligned[0]:boundsAligned[0]+boundsAligned[1]]),
-                "gsSeq":re.sub(evalContext.charExtend, "",evalContext.gsAligned[boundsAligned[0]:boundsAligned[0] + boundsAligned[1]]),
-                "candidates":normCandidates
-            }
-
-        # Debug test
-        if verbose:
-            EvalContext.printDicoSortedByKey(tokenPosErrReshaped, "tokenPosErrReshaped")
-
+        tokenPosErrReshaped = reshape_input_errors(tokenPosErr, evalContext, verbose)
 
         # Task 1) Run the evaluation : Detection of the position of erroneous tokens
         prec, recall, fmes = evalContext.task1_eval(tokenPosErrReshaped)
@@ -646,7 +652,7 @@ def runEvaluation(datasetDirPath,  # path to the dataset directory (ex: r"./data
         print(strRes.replace(";", "\t"))
 
 
-# %% ../nbs/03_utils.ipynb 35
+# %% ../nbs/03_utils.ipynb 38
 def aggregate_results(csv_file):
     data = pd.read_csv(csv_file, sep=';')
     data['language'] = data.File.apply(lambda x: x[:2])
@@ -654,7 +660,7 @@ def aggregate_results(csv_file):
 
     return data.groupby('language').mean()[['T1_Precision', 'T1_Recall', 'T1_Fmesure']]
 
-# %% ../nbs/03_utils.ipynb 37
+# %% ../nbs/03_utils.ipynb 40
 def reduce_dataset(dataset, n=5):
     """Return dataset with the first n samples for each split"""
     for split in dataset.keys():
