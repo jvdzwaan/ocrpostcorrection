@@ -193,7 +193,7 @@ def process_text(in_file: Path) -> Text:
     return Text(ocr_input, tokens, input_tokens, score)
 
 
-# %% ../nbs/00_icdar_data.ipynb 30
+# %% ../nbs/00_icdar_data.ipynb 31
 def generate_data(in_dir: Path):
     """Process all texts in the dataset and return a dataframe with metadata"""
 
@@ -228,7 +228,7 @@ def generate_data(in_dir: Path):
     return data, md
 
 
-# %% ../nbs/00_icdar_data.ipynb 33
+# %% ../nbs/00_icdar_data.ipynb 34
 def window(iterable, size=2):
     """Given an iterable, return all subsequences of a certain size"""
     i = iter(iterable)
@@ -243,7 +243,7 @@ def window(iterable, size=2):
         win = win[1:] + [e]
         yield win
 
-# %% ../nbs/00_icdar_data.ipynb 35
+# %% ../nbs/00_icdar_data.ipynb 36
 def _process_sequence(key, i, res, sents, labels, keys, start_tokens, scores, languages):
     ocr = [t.ocr for t in res]
     lbls = [t.label for t in res]
