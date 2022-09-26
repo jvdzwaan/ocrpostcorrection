@@ -1,0 +1,3 @@
+[OCR_toInput] example &
+[OCR_aligned] example & @@@
+[ GS_aligned] example x bla

@@ -1,0 +1,3 @@
+[OCR_toInput] This is a cxample. 
+[OCR_aligned] This is a@ cxample. 
+[ GS_aligned] This is an example. 

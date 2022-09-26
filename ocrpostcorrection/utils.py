@@ -210,13 +210,18 @@ class EvalContext:
         with open(filePath, 'r') as f:
             text = f.read().strip()
             self.ocrOriginal, self.ocrAligned, self.gsAligned = [txt[14:] for txt in re.split(r"\r?\n", text)]
+            # text.strip() removes trailing space from gs aligned, but not from the other texts.
+            # This causes problems when calculating recall. The solution is to also remove
+            # trailing space from ocr original and ocr aligned.
+            self.ocrOriginal = self.ocrOriginal.rstrip()
+            self.ocrAligned = self.ocrAligned.rstrip()
 
             if self.charExtend in self.ocrOriginal:
                 print(f'{self.charExtend} found in ocrOriginal. Removing...')
                 self.ocrOriginal = self.ocrOriginal.replace(self.charExtend, '')
 
         # Check file integrity
-        assert self.ocrOriginal == re.sub(self.charExtend, "", self.ocrAligned), "[ERROR] : [OCR_aligned] without \"%s\" doesn't correspond to [OCR_toInput] " % self.charExtend
+        assert self.ocrOriginal == re.sub(self.charExtend, "", self.ocrAligned).rstrip(), "[ERROR] : [OCR_aligned] without \"%s\" doesn't correspond to [OCR_toInput] in file %s" % (self.charExtend, filePath)
 
         # Build the alignment map
         self.aMap = [x.start() - i for i, x in enumerate(re.finditer(self.charExtend + r"|$", self.ocrAligned))]
@@ -596,7 +601,7 @@ def reshape_input_errors(tokenPosErr, evalContext, verbose=False):
 
     return tokenPosErrReshaped
 
-# %% ../nbs/03_utils.ipynb 37
+# %% ../nbs/03_utils.ipynb 39
 def runEvaluation(datasetDirPath,  # path to the dataset directory (ex: r"./dataset_sample")
                   pathInputJsonErrorsCorrections,  # # input path to the JSON result (ex: r"./inputErrCor_sample.json"), format given on https://sites.google.com/view/icdar2017-postcorrectionocr/evaluation)
                   pathOutputCsv,  # output path to the CSV evaluation results (ex: r"./outputEval.csv")
@@ -652,7 +657,7 @@ def runEvaluation(datasetDirPath,  # path to the dataset directory (ex: r"./data
         print(strRes.replace(";", "\t"))
 
 
-# %% ../nbs/03_utils.ipynb 39
+# %% ../nbs/03_utils.ipynb 41
 def aggregate_results(csv_file):
     data = pd.read_csv(csv_file, sep=';')
     data['language'] = data.File.apply(lambda x: x[:2])
@@ -660,7 +665,7 @@ def aggregate_results(csv_file):
 
     return data.groupby('language').mean()[['T1_Precision', 'T1_Recall', 'T1_Fmesure']]
 
-# %% ../nbs/03_utils.ipynb 41
+# %% ../nbs/03_utils.ipynb 43
 def reduce_dataset(dataset, n=5):
     """Return dataset with the first n samples for each split"""
     for split in dataset.keys():
