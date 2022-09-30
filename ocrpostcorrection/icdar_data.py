@@ -2,7 +2,7 @@
 
 # %% auto 0
 __all__ = ['remove_label_and_nl', 'AlignedToken', 'tokenize_aligned', 'InputToken', 'get_input_tokens', 'Text', 'clean',
-           'normalized_ed', 'process_text', 'generate_data', 'window', 'generate_sentences']
+           'normalized_ed', 'process_text', 'generate_data', 'window', 'generate_sentences', 'process_input_ocr']
 
 # %% ../nbs/00_icdar_data.ipynb 2
 from dataclasses import dataclass
@@ -310,3 +310,19 @@ def generate_sentences(df, data, size=15, step=10):
                          keep='first', inplace=True, ignore_index=True)
 
     return data
+
+# %% ../nbs/00_icdar_data.ipynb 38
+import re
+
+def process_input_ocr(text: str) -> Text:
+    """Generate Text object for OCR input text (without aligned gold standard)"""
+    tokens = []
+    for match in re.finditer(r'\b\S+(\s|$)', text):
+        ocr = match.group().strip()
+        gs = ocr
+        start = match.start()
+        len_ocr = len(ocr)
+        label = 0
+
+        tokens.append(InputToken(ocr, gs, start, len_ocr, label))
+    return Text(text, tokens=[], input_tokens=tokens, score=-1)
