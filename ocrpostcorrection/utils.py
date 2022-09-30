@@ -123,7 +123,7 @@ def extract_icdar_output(label_str, input_tokens):
     return text_output
 
 # %% ../nbs/03_utils.ipynb 24
-def predictions2icdar_output(samples, predictions, tokenizer, data_test):
+def _predictions2label_str(samples, predictions, tokenizer):
     """Convert predictions into icdar output format"""
     #print('samples', len(samples))
     #print(samples)
@@ -165,7 +165,16 @@ def predictions2icdar_output(samples, predictions, tokenizer, data_test):
         #print(key)
         labels = gather_token_predictions(preds)        
         label_str = labels2label_str(labels, key)
-        
+        output[key] = label_str
+
+    return output
+
+# %% ../nbs/03_utils.ipynb 25
+def predictions2icdar_output(samples, predictions, tokenizer, data_test):
+    """Convert predictions into icdar output format"""
+    converted = _predictions2label_str(samples, predictions, tokenizer)
+    output = {}
+    for key, label_str in converted.items():
         try:
             text = data_test[key]
             output[key] = extract_icdar_output(label_str, text.input_tokens)
@@ -174,7 +183,7 @@ def predictions2icdar_output(samples, predictions, tokenizer, data_test):
 
     return output
 
-# %% ../nbs/03_utils.ipynb 28
+# %% ../nbs/03_utils.ipynb 29
 def create_perfect_icdar_output(data):
     output = {}
     for key, text_obj in data.items():
@@ -182,10 +191,10 @@ def create_perfect_icdar_output(data):
         output[key] = extract_icdar_output(label_str, data[key].input_tokens)
     return output
 
-# %% ../nbs/03_utils.ipynb 31
+# %% ../nbs/03_utils.ipynb 32
 maxNbCandidate = 6
 
-# %% ../nbs/03_utils.ipynb 32
+# %% ../nbs/03_utils.ipynb 33
 ################# CLASS FOR STORING CURRENT FILE CONTEXT  ################
 class EvalContext:
 
@@ -553,7 +562,7 @@ class EvalContext:
             print("%s:%s" % (str(k), str(d[k])))
 
 
-# %% ../nbs/03_utils.ipynb 34
+# %% ../nbs/03_utils.ipynb 35
 def reshape_input_errors(tokenPosErr, evalContext, verbose=False):
     # Store tokens' positions in mem
     tokensPos = [0] + [spacePos.start() + 1 for spacePos in re.finditer(r"\ ", evalContext.ocrOriginal)]
@@ -601,7 +610,7 @@ def reshape_input_errors(tokenPosErr, evalContext, verbose=False):
 
     return tokenPosErrReshaped
 
-# %% ../nbs/03_utils.ipynb 39
+# %% ../nbs/03_utils.ipynb 40
 def runEvaluation(datasetDirPath,  # path to the dataset directory (ex: r"./dataset_sample")
                   pathInputJsonErrorsCorrections,  # # input path to the JSON result (ex: r"./inputErrCor_sample.json"), format given on https://sites.google.com/view/icdar2017-postcorrectionocr/evaluation)
                   pathOutputCsv,  # output path to the CSV evaluation results (ex: r"./outputEval.csv")
@@ -657,7 +666,7 @@ def runEvaluation(datasetDirPath,  # path to the dataset directory (ex: r"./data
         print(strRes.replace(";", "\t"))
 
 
-# %% ../nbs/03_utils.ipynb 41
+# %% ../nbs/03_utils.ipynb 42
 def aggregate_results(csv_file):
     data = pd.read_csv(csv_file, sep=';')
     data['language'] = data.File.apply(lambda x: x[:2])
@@ -665,7 +674,7 @@ def aggregate_results(csv_file):
 
     return data.groupby('language').mean()[['T1_Precision', 'T1_Recall', 'T1_Fmesure']]
 
-# %% ../nbs/03_utils.ipynb 43
+# %% ../nbs/03_utils.ipynb 44
 def reduce_dataset(dataset, n=5):
     """Return dataset with the first n samples for each split"""
     for split in dataset.keys():
