@@ -7,10 +7,13 @@ __all__ = ['tokenize_and_align_labels_with_tokenizer', 'tokenize_and_align_label
 from functools import partial
 
 # %% ../nbs/01_token_classification.ipynb 4
-def tokenize_and_align_labels_with_tokenizer(tokenizer, examples):
+def tokenize_and_align_labels_with_tokenizer(tokenizer, examples, return_tensors=None):
     """Tokenize function, to be used as partial with instatiated tokenizer"""
     # Source: https://huggingface.co/docs/transformers/custom_datasets#token-classification-with-wnut-emerging-entities
-    tokenized_inputs = tokenizer(examples["tokens"], truncation=True, is_split_into_words=True)
+    tokenized_inputs = tokenizer(examples["tokens"], 
+                                 truncation=True, 
+                                 is_split_into_words=True, 
+                                 return_tensors=return_tensors)
 
     labels = []
     for i, label in enumerate(examples[f"tags"]):
@@ -30,6 +33,6 @@ def tokenize_and_align_labels_with_tokenizer(tokenizer, examples):
     return tokenized_inputs
 
 # %% ../nbs/01_token_classification.ipynb 5
-def tokenize_and_align_labels(tokenizer):
+def tokenize_and_align_labels(tokenizer, return_tensors=None):
     """Function to tokenize samples and align the labels"""""
-    return partial(tokenize_and_align_labels_with_tokenizer, tokenizer)
+    return partial(tokenize_and_align_labels_with_tokenizer, tokenizer, return_tensors=return_tensors)
