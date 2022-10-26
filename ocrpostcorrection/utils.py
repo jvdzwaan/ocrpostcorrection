@@ -658,7 +658,7 @@ def reshape_input_errors(tokenPosErr, evalContext, verbose=False):
 
     return tokenPosErrReshaped
 
-# %% ../nbs/03_utils.ipynb 50
+# %% ../nbs/03_utils.ipynb 49
 def runEvaluation(datasetDirPath,  # path to the dataset directory (ex: r"./dataset_sample")
                   pathInputJsonErrorsCorrections,  # # input path to the JSON result (ex: r"./inputErrCor_sample.json"), format given on https://sites.google.com/view/icdar2017-postcorrectionocr/evaluation)
                   pathOutputCsv,  # output path to the CSV evaluation results (ex: r"./outputEval.csv")
@@ -714,7 +714,7 @@ def runEvaluation(datasetDirPath,  # path to the dataset directory (ex: r"./data
         print(strRes.replace(";", "\t"))
 
 
-# %% ../nbs/03_utils.ipynb 52
+# %% ../nbs/03_utils.ipynb 51
 def aggregate_results(csv_file):
     data = pd.read_csv(csv_file, sep=';')
     data['language'] = data.File.apply(lambda x: x[:2])
@@ -722,7 +722,7 @@ def aggregate_results(csv_file):
 
     return data.groupby('language').mean()[['T1_Precision', 'T1_Recall', 'T1_Fmesure']]
 
-# %% ../nbs/03_utils.ipynb 54
+# %% ../nbs/03_utils.ipynb 53
 def reduce_dataset(dataset, n=5):
     """Return dataset with the first n samples for each split"""
     for split in dataset.keys():
