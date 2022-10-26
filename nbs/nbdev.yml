@@ -1,0 +1,9 @@
+project:
+  output-dir: _docs
+
+website:
+  title: "ocrpostcorrection"
+  site-url: "https://jvdzwaan.github.io/ocrpostcorrection/"
+  description: "A Python package for doing OCR post correction"
+  repo-branch: main
+  repo-url: "https://github.com/jvdzwaan/ocrpostcorrection/"
