@@ -3,7 +3,8 @@
 # %% auto 0
 __all__ = ['UNK_IDX', 'PAD_IDX', 'BOS_IDX', 'EOS_IDX', 'special_symbols', 'get_tokens_with_OCR_mistakes', 'yield_tokens',
            'generate_vocabs', 'SimpleCorrectionDataset', 'sequential_transforms', 'tensor_transform',
-           'get_text_transform', 'collate_fn_with_text_transform', 'collate_fn']
+           'get_text_transform', 'collate_fn_with_text_transform', 'collate_fn', 'EncoderRNN', 'AttnDecoderRNN',
+           'SimpleCorrectionSeq2seq']
 
 # %% ../nbs/02_error_correction.ipynb 2
 import dataclasses
@@ -151,3 +152,181 @@ def collate_fn_with_text_transform(text_transform, batch):
 def collate_fn(text_transform):
     """Function to collate data samples into batch tensors"""
     return partial(collate_fn_with_text_transform, text_transform)
+
+# %% ../nbs/02_error_correction.ipynb 30
+class EncoderRNN(nn.Module):
+    def __init__(self, input_size, hidden_size):
+        super(EncoderRNN, self).__init__()
+        self.hidden_size = hidden_size
+
+        self.embedding = nn.Embedding(input_size, hidden_size)
+        self.gru = nn.GRU(hidden_size, hidden_size, batch_first=True)
+
+    def forward(self, input, hidden):
+        # print('Encoder')
+        # print('input size', input.size())
+        # print('hidden size', hidden.size())
+        embedded = self.embedding(input) 
+        # print('embedded size', embedded.size())
+        # print(embedded)
+        # print('embedded size met view', embedded.view(1, 1, -1).size())
+        output = embedded
+        output, hidden = self.gru(output, hidden)
+        return output, hidden
+
+    def initHidden(self, batch_size, device):
+        return torch.zeros(1, batch_size, self.hidden_size, device=device)
+
+# %% ../nbs/02_error_correction.ipynb 31
+class AttnDecoderRNN(nn.Module):
+    def __init__(self, hidden_size, output_size, dropout_p=0.1, max_length=11):
+        super(AttnDecoderRNN, self).__init__()
+        self.hidden_size = hidden_size
+        self.output_size = output_size
+        self.dropout_p = dropout_p
+        self.max_length = max_length
+
+        self.embedding = nn.Embedding(self.output_size, self.hidden_size)
+        self.attn = nn.Linear(self.hidden_size * 2, self.max_length)
+        self.attn_combine = nn.Linear(self.hidden_size * 2, self.hidden_size)
+        self.dropout = nn.Dropout(self.dropout_p)
+        self.gru = nn.GRU(self.hidden_size, self.hidden_size)
+        self.out = nn.Linear(self.hidden_size, self.output_size)
+
+    def forward(self, input, hidden, encoder_outputs):
+        embedded = self.embedding(input)
+        embedded = self.dropout(embedded)
+
+        # print('embedded size', embedded.size())
+        # print(embedded)
+        embedded = torch.permute(embedded, (1, 0, 2))
+        # print('permuted embedded size', embedded.size())
+        # print(embedded)
+
+        # print('hidden size', hidden.size())
+        # print(hidden)
+
+        # print('permuted embedded[0] size', embedded[0].size())
+        # print('hidden[0] size', hidden[0].size())
+
+        attn_weights = F.softmax(
+            self.attn(torch.cat((embedded[0], hidden[0]), 1)), dim=1)
+
+        # print('attn_weights', attn_weights.size())
+        # print('attn_weights unsqueeze(1)', attn_weights.unsqueeze(1).size())
+        # print('encoder outputs', encoder_outputs.size())
+
+
+        attn_applied = torch.bmm(attn_weights.unsqueeze(1),
+                                 encoder_outputs)
+
+        # print('embedded[0]', embedded[0].size())
+        # print('attn_applied', attn_applied.size())
+        # print('attn_applied squeeze', attn_applied.squeeze().size())
+        output = torch.cat((embedded[0], attn_applied.squeeze(1)), 1)
+        # print('output', output.size())
+        output = self.attn_combine(output).unsqueeze(0)
+        # print('output', output.size())
+
+        output = F.relu(output)
+        output, hidden = self.gru(output, hidden)
+
+        output = F.log_softmax(self.out(output[0]), dim=1)
+
+        # print(f'output: {output.size()}; hidden: {hidden.size()}; attn_weigts: {attn_weights.size()}')
+
+        return output, hidden, attn_weights
+
+    def initHidden(self, batch_size, device):
+        return torch.zeros(1, batch_size, self.hidden_size, device=device)
+
+# %% ../nbs/02_error_correction.ipynb 32
+class SimpleCorrectionSeq2seq(nn.Module):
+    def __init__(self, input_size, hidden_size, output_size, dropout, max_length, 
+                 teacher_forcing_ratio, device='cpu'):
+        super(SimpleCorrectionSeq2seq, self).__init__()
+
+        self.device = device
+
+        self.teacher_forcing_ratio = teacher_forcing_ratio
+
+        self.encoder = EncoderRNN(input_size, hidden_size)
+        self.decoder = AttnDecoderRNN(hidden_size, output_size, 
+                                      dropout_p=dropout, max_length=max_length)
+    
+    def forward(self, input, encoder_hidden, target, max_length):
+        # input is src seq len x batch size
+        # input voor de encoder (1 stap) moet zijn input seq len x batch size x 1
+        input_tensor = input.unsqueeze(2)
+        # print('input tensor size', input_tensor.size())
+
+        input_length = input.size(0)
+
+        batch_size = input.size(1)
+
+        # Encoder part
+        encoder_outputs = torch.zeros(batch_size, max_length, self.encoder.hidden_size, 
+                                      device=self.device)
+        # print('encoder outputs size', encoder_outputs.size())
+    
+        for ei in range(input_length):
+            # print(f'Index {ei}; input size: {input_tensor[ei].size()}; encoder hidden size: {encoder_hidden.size()}')
+            encoder_output, encoder_hidden = self.encoder(
+                input_tensor[ei], encoder_hidden)
+            # print('Index', ei)
+            # print('encoder output size', encoder_output.size())
+            # print('encoder outputs size', encoder_outputs.size())
+            # print('output selection size', encoder_output[:, 0].size())
+            # print('ouput to save', encoder_outputs[:,ei].size())
+            encoder_outputs[:, ei] = encoder_output[0, 0]
+        
+        # print('encoder outputs', encoder_outputs)
+        # print('encoder hidden', encoder_hidden)
+
+        # Decoder part
+        # Target = seq len x batch size
+        # Decoder input moet zijn: batch_size x 1 (van het eerste token = BOS)
+        target_length = target.size(0)
+
+        decoder_input = torch.tensor([[BOS_IDX] for _ in range(batch_size)], 
+                                     device=self.device)
+        # print('decoder input size', decoder_input.size())
+
+        decoder_outputs = torch.zeros(batch_size, max_length, self.decoder.output_size, 
+                                      device=self.device)
+
+        decoder_hidden = encoder_hidden
+
+        use_teacher_forcing = True if random.random() < self.teacher_forcing_ratio else False
+        
+        for di in range(target_length):
+            decoder_output, decoder_hidden, decoder_attention = self.decoder(
+                decoder_input, decoder_hidden, encoder_outputs)
+            if use_teacher_forcing:
+                # Teacher forcing: Feed the target as the next input
+                decoder_input = target[di, :].unsqueeze(1)  # Teacher forcing
+                #print('decoder input size:', decoder_input.size())
+            else:
+                # Without teacher forcing: use its own predictions as the next input
+                topv, topi = decoder_output.topk(1)
+                decoder_input = topi.detach()  # detach from history as input
+                #print('decoder input size:', decoder_input.size())
+
+            # print(f'Index {di}; decoder output size: {decoder_output.size()}; decoder input size: {decoder_input.size()}')
+            decoder_outputs[:, di] = decoder_output
+
+        # Zero out probabilities for padded chars
+        target_masks = (target != PAD_IDX).float()
+
+        # Compute log probability of generating true target words
+        # print('P (decoder_outputs)', decoder_outputs.size())
+        # print(target.transpose(0, 1))
+        # print('Index', target.size(), target.transpose(0, 1).unsqueeze(-1))
+        target_gold_std_log_prob = torch.gather(decoder_outputs, index=target.transpose(0, 1).unsqueeze(-1), dim=-1).squeeze(-1) * target_masks.transpose(0, 1)
+        #print(target_gold_std_log_prob)
+        scores = target_gold_std_log_prob.sum(dim=1)
+
+        #print(scores)
+
+        return scores, encoder_outputs
+
