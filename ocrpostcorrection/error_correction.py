@@ -12,7 +12,7 @@ import random
 
 from functools import partial
 from itertools import chain
-from typing import Iterable, List
+from typing import Iterable, List, Dict
 
 import pandas as pd
 import torch
@@ -26,9 +26,9 @@ from torchtext.vocab import build_vocab_from_iterator
 from .icdar_data import Text, normalized_ed
 
 # %% ../nbs/02_error_correction.ipynb 5
-def get_tokens_with_OCR_mistakes(data: dict[str, Text], 
-                                data_test: dict[str, Text], 
-                                val_files: list[str]) \
+def get_tokens_with_OCR_mistakes(data: Dict[str, Text], 
+                                data_test: Dict[str, Text], 
+                                val_files: List[str]) \
                                     -> pd.DataFrame:
     """Return pandas dataframe with all OCR mistakes from train, val, and test"""
     tokens = []
