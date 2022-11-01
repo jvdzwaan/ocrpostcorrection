@@ -4,7 +4,7 @@
 __all__ = ['UNK_IDX', 'PAD_IDX', 'BOS_IDX', 'EOS_IDX', 'special_symbols', 'get_tokens_with_OCR_mistakes', 'yield_tokens',
            'generate_vocabs', 'SimpleCorrectionDataset', 'sequential_transforms', 'tensor_transform',
            'get_text_transform', 'collate_fn_with_text_transform', 'collate_fn', 'EncoderRNN', 'AttnDecoderRNN',
-           'SimpleCorrectionSeq2seq', 'indices2string', 'predict_and_convert_to_str']
+           'SimpleCorrectionSeq2seq', 'GreedySearchDecoder', 'indices2string', 'predict_and_convert_to_str']
 
 # %% ../nbs/02_error_correction.ipynb 2
 import dataclasses
@@ -333,6 +333,73 @@ class SimpleCorrectionSeq2seq(nn.Module):
 
 
 # %% ../nbs/02_error_correction.ipynb 42
+class GreedySearchDecoder(nn.Module):
+    def __init__(self, model):
+        super(GreedySearchDecoder, self).__init__()
+        self.encoder = model.encoder
+        self.decoder = model.decoder
+
+        self.device = model.device
+
+    def forward(self, input, target, max_length):
+        # input is src seq len x batch size
+        # input voor de encoder (1 stap) moet zijn input seq len x batch size x 1
+        input_tensor = input.unsqueeze(2)
+        # print('input tensor size', input_tensor.size())
+
+        input_length = input.size(0)
+
+        batch_size = input.size(1)
+        encoder_hidden = self.encoder.initHidden(batch_size, device)
+
+        # Encoder part    
+        encoder_outputs = torch.zeros(batch_size, max_length, self.encoder.hidden_size, 
+                                      device=self.device)
+        # print('encoder outputs size', encoder_outputs.size())
+    
+        for ei in range(input_length):
+            # print(f'Index {ei}; input size: {input_tensor[ei].size()}; encoder hidden size: {encoder_hidden.size()}')
+            encoder_output, encoder_hidden = self.encoder(
+                input_tensor[ei], encoder_hidden)
+            # print('Index', ei)
+            # print('encoder output size', encoder_output.size())
+            # print('encoder outputs size', encoder_outputs.size())
+            # print('output selection size', encoder_output[:, 0].size())
+            # print('ouput to save', encoder_outputs[:,ei].size())
+            encoder_outputs[:, ei] = encoder_output[0, 0]
+        
+        # print('encoder outputs', encoder_outputs)
+        # print('encoder hidden', encoder_hidden)
+
+        # Decoder part
+        # Target = seq len x batch size
+        # Decoder input moet zijn: batch_size x 1 (van het eerste token = BOS)
+        target_length = target.size(0)
+
+        decoder_input = torch.tensor([[BOS_IDX] for _ in range(batch_size)], 
+                                     device=self.device)
+        # print('decoder input size', decoder_input.size())
+
+        all_tokens = torch.zeros(batch_size, max_length, device=device, dtype=torch.long)
+        # print('all_tokens size', all_tokens.size())
+        decoder_hidden = encoder_hidden
+        
+        for di in range(target_length):
+            decoder_output, decoder_hidden, decoder_attention = self.decoder(
+                decoder_input, decoder_hidden, encoder_outputs)
+            # Without teacher forcing: use its own predictions as the next input
+            topv, topi = decoder_output.topk(1)
+            decoder_input = topi.detach()  # detach from history as input
+            # print('decoder input size:', decoder_input.size())
+            # print('decoder input squeezed', decoder_input.clone().squeeze())
+
+            # Record token
+            all_tokens[:, di] = decoder_input.clone().squeeze(1)
+            # print('all_tokens', all_tokens)
+
+        return all_tokens
+
+# %% ../nbs/02_error_correction.ipynb 44
 def indices2string(indices, itos):
     output = []
     for idxs in indices:
@@ -348,10 +415,12 @@ def indices2string(indices, itos):
         output.append(word)
     return output
 
-# %% ../nbs/02_error_correction.ipynb 43
+# %% ../nbs/02_error_correction.ipynb 46
 def predict_and_convert_to_str(model, dataloader, tgt_vocab, MAX_LENGTH, device):
     was_training = model.training
     model.eval()
+
+    decoder = GreedySearchDecoder(model)
 
     itos = tgt_vocab.get_itos()
     output_strings = []
@@ -360,19 +429,10 @@ def predict_and_convert_to_str(model, dataloader, tgt_vocab, MAX_LENGTH, device)
         for src, tgt in tqdm(dataloader):
             src = src.to(device)
             tgt = tgt.to(device)
+
+            predicted_indices = decoder(src, tgt, max_len)
             
-            batch_size = src.size(1)
-
-            encoder_hidden = model.encoder.initHidden(batch_size=batch_size, device=device)
-
-            example_losses, decoder_ouputs = model(src, encoder_hidden, tgt, MAX_LENGTH)
-
-            # Generate string outputs
-            output_idxs = decoder_ouputs.argmax(-1)
-            #print(output_idxs.size())
-            #print(output_idxs)
-
-            strings_batch = indices2string(output_idxs, itos)
+            strings_batch = indices2string(predicted_indices, itos)
             for s in strings_batch:
                 output_strings.append(s)
 
