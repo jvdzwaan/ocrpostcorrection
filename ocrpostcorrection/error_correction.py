@@ -22,6 +22,7 @@ import torch.nn.functional as F
 from torch.nn.utils.rnn import pad_sequence
 from torch.utils.data import Dataset
 from torchtext.vocab import build_vocab_from_iterator
+from tqdm import tqdm
 
 from .icdar_data import Text, normalized_ed
 
@@ -356,7 +357,7 @@ def predict_and_convert_to_str(model, dataloader, tgt_vocab, MAX_LENGTH, device)
     output_strings = []
 
     with torch.no_grad():
-        for src, tgt in dataloader:
+        for src, tgt in tqdm(dataloader):
             src = src.to(device)
             tgt = tgt.to(device)
             
