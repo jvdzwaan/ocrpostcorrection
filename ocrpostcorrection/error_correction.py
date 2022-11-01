@@ -350,7 +350,7 @@ class GreedySearchDecoder(nn.Module):
         input_length = input.size(0)
 
         batch_size = input.size(1)
-        encoder_hidden = self.encoder.initHidden(batch_size, device)
+        encoder_hidden = self.encoder.initHidden(batch_size, self.device)
 
         # Encoder part    
         encoder_outputs = torch.zeros(batch_size, max_length, self.encoder.hidden_size, 
@@ -380,7 +380,7 @@ class GreedySearchDecoder(nn.Module):
                                      device=self.device)
         # print('decoder input size', decoder_input.size())
 
-        all_tokens = torch.zeros(batch_size, max_length, device=device, dtype=torch.long)
+        all_tokens = torch.zeros(batch_size, max_length, device=self.device, dtype=torch.long)
         # print('all_tokens size', all_tokens.size())
         decoder_hidden = encoder_hidden
         
@@ -416,7 +416,7 @@ def indices2string(indices, itos):
     return output
 
 # %% ../nbs/02_error_correction.ipynb 46
-def predict_and_convert_to_str(model, dataloader, tgt_vocab, MAX_LENGTH, device):
+def predict_and_convert_to_str(model, dataloader, tgt_vocab, max_len, device):
     was_training = model.training
     model.eval()
 
