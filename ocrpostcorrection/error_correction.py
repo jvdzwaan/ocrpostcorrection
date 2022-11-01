@@ -4,7 +4,7 @@
 __all__ = ['UNK_IDX', 'PAD_IDX', 'BOS_IDX', 'EOS_IDX', 'special_symbols', 'get_tokens_with_OCR_mistakes', 'yield_tokens',
            'generate_vocabs', 'SimpleCorrectionDataset', 'sequential_transforms', 'tensor_transform',
            'get_text_transform', 'collate_fn_with_text_transform', 'collate_fn', 'EncoderRNN', 'AttnDecoderRNN',
-           'SimpleCorrectionSeq2seq']
+           'SimpleCorrectionSeq2seq', 'indices2string', 'predict_and_convert_to_str']
 
 # %% ../nbs/02_error_correction.ipynb 2
 import dataclasses
@@ -330,3 +330,52 @@ class SimpleCorrectionSeq2seq(nn.Module):
 
         return scores, encoder_outputs
 
+
+# %% ../nbs/02_error_correction.ipynb 42
+def indices2string(indices, itos):
+    output = []
+    for idxs in indices:
+        #print(idxs)
+        string = []
+        for idx in idxs:
+            if idx not in (UNK_IDX, PAD_IDX, BOS_IDX):
+                if idx == EOS_IDX:
+                    break
+                else:
+                    string.append(itos[idx])
+        word = ''.join(string)
+        output.append(word)
+    return output
+
+# %% ../nbs/02_error_correction.ipynb 43
+def predict_and_convert_to_str(model, dataloader, tgt_vocab, MAX_LENGTH, device):
+    was_training = model.training
+    model.eval()
+
+    itos = tgt_vocab.get_itos()
+    output_strings = []
+
+    with torch.no_grad():
+        for src, tgt in dataloader:
+            src = src.to(device)
+            tgt = tgt.to(device)
+            
+            batch_size = src.size(1)
+
+            encoder_hidden = model.encoder.initHidden(batch_size=batch_size, device=device)
+
+            example_losses, decoder_ouputs = model(src, encoder_hidden, tgt, MAX_LENGTH)
+
+            # Generate string outputs
+            output_idxs = decoder_ouputs.argmax(-1)
+            #print(output_idxs.size())
+            #print(output_idxs)
+
+            strings_batch = indices2string(output_idxs, itos)
+            for s in strings_batch:
+                output_strings.append(s)
+
+    if was_training:
+        model.train()
+
+    return output_strings
