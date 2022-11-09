@@ -4,7 +4,8 @@
 __all__ = ['UNK_IDX', 'PAD_IDX', 'BOS_IDX', 'EOS_IDX', 'special_symbols', 'get_tokens_with_OCR_mistakes', 'yield_tokens',
            'generate_vocabs', 'SimpleCorrectionDataset', 'sequential_transforms', 'tensor_transform',
            'get_text_transform', 'collate_fn_with_text_transform', 'collate_fn', 'EncoderRNN', 'AttnDecoderRNN',
-           'SimpleCorrectionSeq2seq', 'GreedySearchDecoder', 'indices2string', 'predict_and_convert_to_str']
+           'SimpleCorrectionSeq2seq', 'validate_model', 'GreedySearchDecoder', 'indices2string',
+           'predict_and_convert_to_str']
 
 # %% ../nbs/02_error_correction.ipynb 2
 import dataclasses
@@ -331,6 +332,36 @@ class SimpleCorrectionSeq2seq(nn.Module):
 
         return scores, encoder_outputs
 
+
+# %% ../nbs/02_error_correction.ipynb 35
+def validate_model(model, dataloader, MAX_LENGTH, device):
+    cum_loss = 0
+    cum_examples = 0
+
+    was_training = model.training
+    model.eval()
+
+    with torch.no_grad():
+        for src, tgt in dataloader:
+            src = src.to(device)
+            tgt = tgt.to(device)
+            
+            batch_size = src.size(1)
+
+            encoder_hidden = model.encoder.initHidden(batch_size=batch_size, device=device)
+
+            example_losses, decoder_ouputs = model(src, encoder_hidden, tgt, MAX_LENGTH)
+            example_losses = -example_losses
+            batch_loss = example_losses.sum()
+
+            bl = batch_loss.item()
+            cum_loss += bl
+            cum_examples += batch_size
+
+    if was_training:
+        model.train()
+
+    return cum_loss/cum_examples
 
 # %% ../nbs/02_error_correction.ipynb 43
 class GreedySearchDecoder(nn.Module):
