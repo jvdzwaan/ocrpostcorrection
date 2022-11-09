@@ -332,7 +332,7 @@ class SimpleCorrectionSeq2seq(nn.Module):
         return scores, encoder_outputs
 
 
-# %% ../nbs/02_error_correction.ipynb 42
+# %% ../nbs/02_error_correction.ipynb 43
 class GreedySearchDecoder(nn.Module):
     def __init__(self, model):
         super(GreedySearchDecoder, self).__init__()
@@ -399,7 +399,7 @@ class GreedySearchDecoder(nn.Module):
 
         return all_tokens
 
-# %% ../nbs/02_error_correction.ipynb 44
+# %% ../nbs/02_error_correction.ipynb 45
 def indices2string(indices, itos):
     output = []
     for idxs in indices:
@@ -415,7 +415,7 @@ def indices2string(indices, itos):
         output.append(word)
     return output
 
-# %% ../nbs/02_error_correction.ipynb 46
+# %% ../nbs/02_error_correction.ipynb 47
 def predict_and_convert_to_str(model, dataloader, tgt_vocab, max_len, device):
     was_training = model.training
     model.eval()
