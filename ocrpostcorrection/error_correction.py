@@ -103,8 +103,8 @@ def generate_vocabs(train):
 
 # %% ../nbs/02_error_correction.ipynb 16
 class SimpleCorrectionDataset(Dataset):
-    def __init__(self, data, max_len=11):
-        self.ds = data.query(f'len_ocr < {max_len}').query(f'len_gs < {max_len}').copy()
+    def __init__(self, data, max_len=10):
+        self.ds = data.query(f'len_ocr <= {max_len}').query(f'len_gs <= {max_len}').copy()
         self.ds = self.ds.reset_index(drop=False)
 
     def __len__(self):
@@ -252,11 +252,13 @@ class SimpleCorrectionSeq2seq(nn.Module):
 
         self.teacher_forcing_ratio = teacher_forcing_ratio
 
+        self.max_length = max_length+1
+
         self.encoder = EncoderRNN(input_size, hidden_size)
         self.decoder = AttnDecoderRNN(hidden_size, output_size, 
-                                      dropout_p=dropout, max_length=max_length)
+                                      dropout_p=dropout, max_length=self.max_length)
     
-    def forward(self, input, encoder_hidden, target, max_length):
+    def forward(self, input, encoder_hidden, target):
         # input is src seq len x batch size
         # input voor de encoder (1 stap) moet zijn input seq len x batch size x 1
         input_tensor = input.unsqueeze(2)
@@ -267,7 +269,7 @@ class SimpleCorrectionSeq2seq(nn.Module):
         batch_size = input.size(1)
 
         # Encoder part
-        encoder_outputs = torch.zeros(batch_size, max_length, self.encoder.hidden_size, 
+        encoder_outputs = torch.zeros(batch_size, self.max_length, self.encoder.hidden_size, 
                                       device=self.device)
         # print('encoder outputs size', encoder_outputs.size())
     
@@ -294,7 +296,7 @@ class SimpleCorrectionSeq2seq(nn.Module):
                                      device=self.device)
         # print('decoder input size', decoder_input.size())
 
-        decoder_outputs = torch.zeros(batch_size, max_length, self.decoder.output_size, 
+        decoder_outputs = torch.zeros(batch_size, self.max_length, self.decoder.output_size, 
                                       device=self.device)
 
         decoder_hidden = encoder_hidden
@@ -334,7 +336,7 @@ class SimpleCorrectionSeq2seq(nn.Module):
 
 
 # %% ../nbs/02_error_correction.ipynb 35
-def validate_model(model, dataloader, MAX_LENGTH, device):
+def validate_model(model, dataloader, device):
     cum_loss = 0
     cum_examples = 0
 
@@ -350,7 +352,7 @@ def validate_model(model, dataloader, MAX_LENGTH, device):
 
             encoder_hidden = model.encoder.initHidden(batch_size=batch_size, device=device)
 
-            example_losses, decoder_ouputs = model(src, encoder_hidden, tgt, MAX_LENGTH)
+            example_losses, decoder_ouputs = model(src, encoder_hidden, tgt)
             example_losses = -example_losses
             batch_loss = example_losses.sum()
 
@@ -367,12 +369,13 @@ def validate_model(model, dataloader, MAX_LENGTH, device):
 class GreedySearchDecoder(nn.Module):
     def __init__(self, model):
         super(GreedySearchDecoder, self).__init__()
+        self.max_length = model.max_length
         self.encoder = model.encoder
         self.decoder = model.decoder
 
         self.device = model.device
 
-    def forward(self, input, target, max_length):
+    def forward(self, input, target):
         # input is src seq len x batch size
         # input voor de encoder (1 stap) moet zijn input seq len x batch size x 1
         input_tensor = input.unsqueeze(2)
@@ -384,7 +387,7 @@ class GreedySearchDecoder(nn.Module):
         encoder_hidden = self.encoder.initHidden(batch_size, self.device)
 
         # Encoder part    
-        encoder_outputs = torch.zeros(batch_size, max_length, self.encoder.hidden_size, 
+        encoder_outputs = torch.zeros(batch_size, self.max_length, self.encoder.hidden_size, 
                                       device=self.device)
         # print('encoder outputs size', encoder_outputs.size())
     
@@ -411,7 +414,7 @@ class GreedySearchDecoder(nn.Module):
                                      device=self.device)
         # print('decoder input size', decoder_input.size())
 
-        all_tokens = torch.zeros(batch_size, max_length, device=self.device, dtype=torch.long)
+        all_tokens = torch.zeros(batch_size, self.max_length, device=self.device, dtype=torch.long)
         # print('all_tokens size', all_tokens.size())
         decoder_hidden = encoder_hidden
         
@@ -447,7 +450,7 @@ def indices2string(indices, itos):
     return output
 
 # %% ../nbs/02_error_correction.ipynb 47
-def predict_and_convert_to_str(model, dataloader, tgt_vocab, max_len, device):
+def predict_and_convert_to_str(model, dataloader, tgt_vocab, device):
     was_training = model.training
     model.eval()
 
@@ -461,7 +464,7 @@ def predict_and_convert_to_str(model, dataloader, tgt_vocab, max_len, device):
             src = src.to(device)
             tgt = tgt.to(device)
 
-            predicted_indices = decoder(src, tgt, max_len)
+            predicted_indices = decoder(src, tgt)
             
             strings_batch = indices2string(predicted_indices, itos)
             for s in strings_batch:
