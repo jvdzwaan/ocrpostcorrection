@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.2.269">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="description" content="Experimental results for the different tasks">
+
+<title>ocrpostcorrection - Results</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<script src="site_libs/quarto-html/quarto.js"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="styles.css">
+<meta property="og:title" content="ocrpostcorrection - Results">
+<meta property="og:description" content="Experimental results for the different tasks">
+<meta property="og:site-name" content="ocrpostcorrection">
+<meta name="twitter:title" content="ocrpostcorrection - Results">
+<meta name="twitter:description" content="Experimental results for the different tasks">
+<meta name="twitter:card" content="summary">
+</head>
+
+<body class="nav-sidebar floating nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="./index.html">
+    <span class="navbar-title">ocrpostcorrection</span>
+    </a>
+  </div>
+          <div id="quarto-search" class="" title="Search"></div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+    <div class="container-fluid d-flex justify-content-between">
+      <h1 class="quarto-secondary-nav-title">Results</h1>
+      <button type="button" class="quarto-btn-toggle btn" aria-label="Show secondary navigation">
+        <i class="bi bi-chevron-right"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse sidebar-navigation floating overflow-auto">
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link">ocrpostcorrection</a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./icdar_data.html" class="sidebar-item-text sidebar-link">ICDAR Data</a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./token_classification.html" class="sidebar-item-text sidebar-link">Token Classification</a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./error_correction.html" class="sidebar-item-text sidebar-link">Error Correction</a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./utils.html" class="sidebar-item-text sidebar-link">Utils</a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./results.html" class="sidebar-item-text sidebar-link active">Results</a>
+  </div>
+</li>
+    </ul>
+    </div>
+</nav>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#task-1-token-classification" id="toc-task-1-token-classification" class="nav-link active" data-scroll-target="#task-1-token-classification">Task 1: Token Classification</a>
+  <ul class="collapse">
+  <li><a href="#summarized-results-f-measure" id="toc-summarized-results-f-measure" class="nav-link" data-scroll-target="#summarized-results-f-measure">Summarized results (F-measure)</a></li>
+  <li><a href="#token-classification-with-huggingface-bert-07-02-2022-experiment-1" id="toc-token-classification-with-huggingface-bert-07-02-2022-experiment-1" class="nav-link" data-scroll-target="#token-classification-with-huggingface-bert-07-02-2022-experiment-1">Token classification with Huggingface BERT 07-02-2022 (experiment 1)</a></li>
+  <li><a href="#token-classification-with-huggingface-bert-long-sequences-experiment-2" id="toc-token-classification-with-huggingface-bert-long-sequences-experiment-2" class="nav-link" data-scroll-target="#token-classification-with-huggingface-bert-long-sequences-experiment-2">Token classification with Huggingface BERT long sequences (experiment 2)</a></li>
+  </ul></li>
+  <li><a href="#task-2-error-correction---task-1-perfect" id="toc-task-2-error-correction---task-1-perfect" class="nav-link" data-scroll-target="#task-2-error-correction---task-1-perfect">Task 2: Error Correction - Task 1 Perfect</a></li>
+  <li><a href="#task-2-error-correction---task-1-results" id="toc-task-2-error-correction---task-1-results" class="nav-link" data-scroll-target="#task-2-error-correction---task-1-results">Task 2: Error Correction - Task 1 Results</a></li>
+  </ul>
+<div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/jvdzwaan/ocrpostcorrection/issues/new" class="toc-action">Report an issue</a></p></div></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title d-none d-lg-block">Results</h1>
+</div>
+
+<div>
+  <div class="description">
+    Experimental results for the different tasks
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+</header>
+
+<!-- WARNING: THIS FILE WAS AUTOGENERATED! DO NOT EDIT! -->
+<p>Results for the 2019 ICDAR competition on Post-OCR Text correction can be found in <a href="https://hal.archives-ouvertes.fr/hal-02304334/document">this paper</a>. The best results are repeated in the tables below.</p>
+<section id="task-1-token-classification" class="level2">
+<h2 class="anchored" data-anchor-id="task-1-token-classification">Task 1: Token Classification</h2>
+<section id="summarized-results-f-measure" class="level3">
+<h3 class="anchored" data-anchor-id="summarized-results-f-measure">Summarized results (F-measure)</h3>
+<p>Best results in <strong>bold</strong>.</p>
+<table class="table">
+<colgroup>
+<col style="width: 9%">
+<col style="width: 9%">
+<col style="width: 9%">
+<col style="width: 9%">
+<col style="width: 9%">
+<col style="width: 9%">
+<col style="width: 9%">
+<col style="width: 9%">
+<col style="width: 9%">
+<col style="width: 9%">
+<col style="width: 9%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Method</th>
+<th>BG</th>
+<th>CZ</th>
+<th>DE</th>
+<th>EN</th>
+<th>ES</th>
+<th>FI</th>
+<th>FR</th>
+<th>NL</th>
+<th>PL</th>
+<th>SL</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>CCC (2019 competition winner)</td>
+<td><strong>0.77</strong></td>
+<td><strong>0.70</strong></td>
+<td>0.95</td>
+<td><strong>0.67</strong></td>
+<td><strong>0.69</strong></td>
+<td><strong>0.84</strong></td>
+<td><strong>0.67</strong></td>
+<td><strong>0.71</strong></td>
+<td><strong>0.82</strong></td>
+<td><strong>0.69</strong></td>
+</tr>
+<tr class="even">
+<td>Token classification with Huggingface BERT 07-02-2022 (experiment 1)</td>
+<td>0.74</td>
+<td>0.64</td>
+<td>0.93</td>
+<td>0.62</td>
+<td>0.59</td>
+<td>0.82</td>
+<td>0.59</td>
+<td>0.66</td>
+<td>0.77</td>
+<td>0.63</td>
+</tr>
+<tr class="odd">
+<td>Token classification with Huggingface BERT long sequences (experiment 2)</td>
+<td>0.74</td>
+<td>0.69</td>
+<td><strong>0.96</strong></td>
+<td><strong>0.67</strong></td>
+<td>0.63</td>
+<td>0.83</td>
+<td>0.65</td>
+<td>0.69</td>
+<td>0.8</td>
+<td><strong>0.69</strong></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="token-classification-with-huggingface-bert-07-02-2022-experiment-1" class="level3">
+<h3 class="anchored" data-anchor-id="token-classification-with-huggingface-bert-07-02-2022-experiment-1">Token classification with Huggingface BERT 07-02-2022 (experiment 1)</h3>
+<ul>
+<li>Validation set: 10% of texts (stratified on language)</li>
+<li>Dataset 07-02-2022
+<ul>
+<li>Normalized editdistance threshold for ‘sentences’: 0.3 (only for train and val)</li>
+<li>Sequence (sentence) lenght: 35, step: 30 (overlap of 5 tokens)</li>
+</ul></li>
+<li>Pretrained model: <a href="https://huggingface.co/bert-base-multilingual-cased">bert-base-multilingual-cased</a></li>
+<li>Loss
+<ul>
+<li>Train: 0.253900</li>
+<li>Val: 0.290570</li>
+<li>Test:</li>
+</ul></li>
+</ul>
+<table class="table">
+<thead>
+<tr class="header">
+<th style="text-align: left;">language</th>
+<th style="text-align: left;">T1_Precision</th>
+<th style="text-align: left;">T1_Recall</th>
+<th style="text-align: left;">T1_Fmesure</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">BG</td>
+<td style="text-align: left;">0.875714</td>
+<td style="text-align: left;">0.665102</td>
+<td style="text-align: left;">0.73898</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">CZ</td>
+<td style="text-align: left;">0.81</td>
+<td style="text-align: left;">0.548696</td>
+<td style="text-align: left;">0.635217</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">DE</td>
+<td style="text-align: left;">0.975809</td>
+<td style="text-align: left;">0.88539</td>
+<td style="text-align: left;">0.927579</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">EN</td>
+<td style="text-align: left;">0.850833</td>
+<td style="text-align: left;">0.535625</td>
+<td style="text-align: left;">0.623125</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">ES</td>
+<td style="text-align: left;">0.9068</td>
+<td style="text-align: left;">0.464</td>
+<td style="text-align: left;">0.591</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">FI</td>
+<td style="text-align: left;">0.895</td>
+<td style="text-align: left;">0.770125</td>
+<td style="text-align: left;">0.8235</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">FR</td>
+<td style="text-align: left;">0.806301</td>
+<td style="text-align: left;">0.48875</td>
+<td style="text-align: left;">0.592939</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">NL</td>
+<td style="text-align: left;">0.870816</td>
+<td style="text-align: left;">0.596939</td>
+<td style="text-align: left;">0.662449</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">PL</td>
+<td style="text-align: left;">0.8894</td>
+<td style="text-align: left;">0.6982</td>
+<td style="text-align: left;">0.7738</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">SL</td>
+<td style="text-align: left;">0.805</td>
+<td style="text-align: left;">0.575833</td>
+<td style="text-align: left;">0.63875</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="token-classification-with-huggingface-bert-long-sequences-experiment-2" class="level3">
+<h3 class="anchored" data-anchor-id="token-classification-with-huggingface-bert-long-sequences-experiment-2">Token classification with Huggingface BERT long sequences (experiment 2)</h3>
+<ul>
+<li>Validation set: 10% of texts (stratified on language)</li>
+<li>Dataset 07-02-2022
+<ul>
+<li>Normalized editdistance threshold for ‘sentences’: 0.3 (only for train and val)</li>
+<li>Sequence (sentence) lenght: 150, step: 150</li>
+</ul></li>
+<li>Pretrained model: <a href="https://huggingface.co/bert-base-multilingual-cased">bert-base-multilingual-cased</a></li>
+<li>Loss
+<ul>
+<li>Train: 0.224500</li>
+<li>Val: 0.285791</li>
+<li>Test: 0.4178357720375061</li>
+</ul></li>
+</ul>
+<table class="table">
+<thead>
+<tr class="header">
+<th style="text-align: left;">language</th>
+<th style="text-align: right;">T1_Precision</th>
+<th style="text-align: right;">T1_Recall</th>
+<th style="text-align: right;">T1_Fmesure</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">BG</td>
+<td style="text-align: right;">0.85</td>
+<td style="text-align: right;">0.693673</td>
+<td style="text-align: right;">0.744286</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">CZ</td>
+<td style="text-align: right;">0.808043</td>
+<td style="text-align: right;">0.623261</td>
+<td style="text-align: right;">0.685652</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">DE</td>
+<td style="text-align: right;">0.971874</td>
+<td style="text-align: right;">0.954152</td>
+<td style="text-align: right;">0.962806</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">EN</td>
+<td style="text-align: right;">0.823333</td>
+<td style="text-align: right;">0.618125</td>
+<td style="text-align: right;">0.668333</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">ES</td>
+<td style="text-align: right;">0.8722</td>
+<td style="text-align: right;">0.52</td>
+<td style="text-align: right;">0.6254</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">FI</td>
+<td style="text-align: right;">0.896625</td>
+<td style="text-align: right;">0.785625</td>
+<td style="text-align: right;">0.833375</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">FR</td>
+<td style="text-align: right;">0.797703</td>
+<td style="text-align: right;">0.571588</td>
+<td style="text-align: right;">0.651368</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">NL</td>
+<td style="text-align: right;">0.875102</td>
+<td style="text-align: right;">0.634286</td>
+<td style="text-align: right;">0.690204</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">PL</td>
+<td style="text-align: right;">0.8872</td>
+<td style="text-align: right;">0.7466</td>
+<td style="text-align: right;">0.8026</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">SL</td>
+<td style="text-align: right;">0.806667</td>
+<td style="text-align: right;">0.653333</td>
+<td style="text-align: right;">0.692917</td>
+</tr>
+</tbody>
+</table>
+<section id="remarks" class="level4">
+<h4 class="anchored" data-anchor-id="remarks">Remarks</h4>
+<p>For some texts the sequences of length 150 have to be truncated to fit into the 512 input tokens for BERT. Consequently, we are missing predictions for these truncated tokens. Maybe it is a good idea to decrease the ‘step’ size, so we’ll have predictions for every token. However, this would also mean that we’ll have more repetition in the training set. This might impact the results in a negative way.</p>
+</section>
+</section>
+</section>
+<section id="task-2-error-correction---task-1-perfect" class="level2">
+<h2 class="anchored" data-anchor-id="task-2-error-correction---task-1-perfect">Task 2: Error Correction - Task 1 Perfect</h2>
+</section>
+<section id="task-2-error-correction---task-1-results" class="level2">
+<h2 class="anchored" data-anchor-id="task-2-error-correction---task-1-results">Task 2: Error Correction - Task 1 Results</h2>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>
