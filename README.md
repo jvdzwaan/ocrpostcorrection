@@ -18,4 +18,6 @@ pip install -e .
 
 ## How to use
 
-See [ocrpostcorrection-notebooks]() for usage examples.
+See the
+[ocrpostcorrection-notebooks](https://github.com/jvdzwaan/ocrpostcorrection-notebooks)
+repository and [my blog](https://jvdzwaan.github.io) for usage examples.
