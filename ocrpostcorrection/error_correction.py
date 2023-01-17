@@ -137,7 +137,7 @@ def get_text_transform(vocab_transform):
                                                      tensor_transform) # Add BOS/EOS and create tensor
     return text_transform
 
-# %% ../nbs/02_error_correction.ipynb 26
+# %% ../nbs/02_error_correction.ipynb 27
 def collate_fn_with_text_transform(text_transform, batch):
     """Function to collate data samples into batch tensors, to be used as partial with instatiated text_transform"""
     src_batch, tgt_batch = [], []
@@ -155,7 +155,7 @@ def collate_fn(text_transform):
     """Function to collate data samples into batch tensors"""
     return partial(collate_fn_with_text_transform, text_transform)
 
-# %% ../nbs/02_error_correction.ipynb 30
+# %% ../nbs/02_error_correction.ipynb 31
 class EncoderRNN(nn.Module):
     def __init__(self, input_size, hidden_size):
         super(EncoderRNN, self).__init__()
@@ -179,7 +179,7 @@ class EncoderRNN(nn.Module):
     def initHidden(self, batch_size, device):
         return torch.zeros(1, batch_size, self.hidden_size, device=device)
 
-# %% ../nbs/02_error_correction.ipynb 31
+# %% ../nbs/02_error_correction.ipynb 32
 class AttnDecoderRNN(nn.Module):
     def __init__(self, hidden_size, output_size, dropout_p=0.1, max_length=11):
         super(AttnDecoderRNN, self).__init__()
@@ -242,7 +242,7 @@ class AttnDecoderRNN(nn.Module):
     def initHidden(self, batch_size, device):
         return torch.zeros(1, batch_size, self.hidden_size, device=device)
 
-# %% ../nbs/02_error_correction.ipynb 32
+# %% ../nbs/02_error_correction.ipynb 33
 class SimpleCorrectionSeq2seq(nn.Module):
     def __init__(self, input_size, hidden_size, output_size, dropout, max_length, 
                  teacher_forcing_ratio, device='cpu'):
@@ -335,7 +335,7 @@ class SimpleCorrectionSeq2seq(nn.Module):
         return scores, encoder_outputs
 
 
-# %% ../nbs/02_error_correction.ipynb 35
+# %% ../nbs/02_error_correction.ipynb 36
 def validate_model(model, dataloader, device):
     cum_loss = 0
     cum_examples = 0
@@ -365,7 +365,7 @@ def validate_model(model, dataloader, device):
 
     return cum_loss/cum_examples
 
-# %% ../nbs/02_error_correction.ipynb 43
+# %% ../nbs/02_error_correction.ipynb 44
 class GreedySearchDecoder(nn.Module):
     def __init__(self, model):
         super(GreedySearchDecoder, self).__init__()
@@ -433,7 +433,7 @@ class GreedySearchDecoder(nn.Module):
 
         return all_tokens
 
-# %% ../nbs/02_error_correction.ipynb 45
+# %% ../nbs/02_error_correction.ipynb 46
 def indices2string(indices, itos):
     output = []
     for idxs in indices:
@@ -449,7 +449,7 @@ def indices2string(indices, itos):
         output.append(word)
     return output
 
-# %% ../nbs/02_error_correction.ipynb 47
+# %% ../nbs/02_error_correction.ipynb 48
 def predict_and_convert_to_str(model, dataloader, tgt_vocab, device):
     was_training = model.training
     model.eval()
