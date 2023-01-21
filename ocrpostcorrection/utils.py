@@ -377,7 +377,7 @@ class EvalContext:
         return errorList
 
 
-    def task1_eval(self, inputErroneousTokens):
+    def task1_eval(self, inputErroneousTokens, print_sets=False):
 
         # Add tolerance to hyphens : work on a new GS where hyphens founds in OCR are considered to be ignored in task1
         gsAlignedHyphensIgnored = self.gsAligned
@@ -449,9 +449,12 @@ class EvalContext:
         fmes = (2.0 * float(prec * recall) / float(prec + recall)) if (prec + recall) > 0 else 0
 
 		# Debug test
-        if self.verbose:
+        if self.verbose or print_sets:
             print("TASK 1) ErrTP %d / errFP %d / errFN %d /" % (errTP, errFP, errFN) + \
                   " prec %0.2f / recall %0.2f / fmes %0.2f" % (prec, recall, fmes))
+        if print_sets:
+            print('False positives:', setErrPos.difference(realErrPos))
+            print('False negatives:', realErrPos.difference(setErrPos))
 
         return prec, recall, fmes
 
@@ -658,7 +661,7 @@ def reshape_input_errors(tokenPosErr, evalContext, verbose=False):
 
     return tokenPosErrReshaped
 
-# %% ../nbs/03_utils.ipynb 49
+# %% ../nbs/03_utils.ipynb 50
 def runEvaluation(datasetDirPath,  # path to the dataset directory (ex: r"./dataset_sample")
                   pathInputJsonErrorsCorrections,  # # input path to the JSON result (ex: r"./inputErrCor_sample.json"), format given on https://sites.google.com/view/icdar2017-postcorrectionocr/evaluation)
                   pathOutputCsv,  # output path to the CSV evaluation results (ex: r"./outputEval.csv")
@@ -714,7 +717,7 @@ def runEvaluation(datasetDirPath,  # path to the dataset directory (ex: r"./data
         print(strRes.replace(";", "\t"))
 
 
-# %% ../nbs/03_utils.ipynb 51
+# %% ../nbs/03_utils.ipynb 52
 def aggregate_results(csv_file):
     data = pd.read_csv(csv_file, sep=';')
     data['language'] = data.File.apply(lambda x: x[:2])
@@ -722,7 +725,7 @@ def aggregate_results(csv_file):
 
     return data.groupby('language').mean()[['T1_Precision', 'T1_Recall', 'T1_Fmesure']]
 
-# %% ../nbs/03_utils.ipynb 53
+# %% ../nbs/03_utils.ipynb 54
 def reduce_dataset(dataset, n=5):
     """Return dataset with the first n samples for each split"""
     for split in dataset.keys():
