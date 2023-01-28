@@ -4,7 +4,8 @@
 __all__ = ['maxNbCandidate', 'predictions_to_labels', 'separate_subtoken_predictions', 'merge_subtoken_predictions',
            'gather_token_predictions', 'labels2label_str', 'extract_icdar_output', 'predictions2icdar_output',
            'create_entity', 'extract_entity_output', 'predictions2entity_output', 'create_perfect_icdar_output',
-           'EvalContext', 'reshape_input_errors', 'runEvaluation', 'aggregate_results', 'reduce_dataset']
+           'EvalContext', 'reshape_input_errors', 'runEvaluation', 'icdar_output2simple_correction_dataset_df',
+           'aggregate_results', 'reduce_dataset']
 
 # %% ../nbs/03_utils.ipynb 2
 import codecs
@@ -23,6 +24,8 @@ import pandas as pd
 
 from loguru import logger
 from transformers import AutoTokenizer
+
+from .icdar_data import Text
 
 # %% ../nbs/03_utils.ipynb 5
 def predictions_to_labels(predictions):
@@ -718,6 +721,35 @@ def runEvaluation(datasetDirPath,  # path to the dataset directory (ex: r"./data
 
 
 # %% ../nbs/03_utils.ipynb 52
+def icdar_output2simple_correction_dataset_df(output: dict[str, dict[str,dict]], data: dict[str, Text], dataset: str='test') -> pd.DataFrame:
+    """Convert the icdar data error detection output to input for SimpleCorrectionDataset"""
+    samples = []
+    for key, mistakes in output.items():
+        text = data[key]
+        for token in mistakes:
+            sample = {}
+            parts = token.split(':')
+            start_idx = int(parts[0])
+            num_tokens = int(parts[0])
+            for at in text.tokens:
+                if at.start == start_idx:
+                    sample['ocr'] = at.ocr
+                    sample['gs'] = at.gs
+                    sample['start'] = at.start
+                    sample['text'] = key
+                    sample['len_ocr'] = at.len_ocr
+                    sample['len_gs'] = len(at.gs)
+                    parts = key.split('/')
+                    sample['language'] = parts[0]
+                    sample['subset'] = parts[1]
+                    sample['dataset'] = dataset
+    
+            if sample == {}:
+                raise ValueError(f'No token found for {key}, start index: {start_idx}')
+            samples.append(sample)
+    return pd.DataFrame(samples)
+
+# %% ../nbs/03_utils.ipynb 56
 def aggregate_results(csv_file):
     data = pd.read_csv(csv_file, sep=';')
     data['language'] = data.File.apply(lambda x: x[:2])
@@ -725,7 +757,7 @@ def aggregate_results(csv_file):
 
     return data.groupby('language').mean()[['T1_Precision', 'T1_Recall', 'T1_Fmesure']]
 
-# %% ../nbs/03_utils.ipynb 54
+# %% ../nbs/03_utils.ipynb 58
 def reduce_dataset(dataset, n=5):
     """Return dataset with the first n samples for each split"""
     for split in dataset.keys():
