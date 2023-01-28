@@ -18,6 +18,7 @@ import re
 from functools import partial
 from collections import defaultdict, Counter
 from pathlib import Path
+from typing import Dict
 
 import numpy as np
 import pandas as pd
@@ -721,7 +722,7 @@ def runEvaluation(datasetDirPath,  # path to the dataset directory (ex: r"./data
 
 
 # %% ../nbs/03_utils.ipynb 52
-def icdar_output2simple_correction_dataset_df(output: dict[str, dict[str,dict]], data: dict[str, Text], dataset: str='test') -> pd.DataFrame:
+def icdar_output2simple_correction_dataset_df(output: Dict[str, Dict[str,Dict]], data: Dict[str, Text], dataset: str='test') -> pd.DataFrame:
     """Convert the icdar data error detection output to input for SimpleCorrectionDataset"""
     samples = []
     for key, mistakes in output.items():
