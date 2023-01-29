@@ -738,6 +738,7 @@ def icdar_output2simple_correction_dataset_df(output: Dict[str, Dict[str,Dict]],
                     sample['gs'] = at.gs
                     sample['start'] = at.start
                     sample['text'] = key
+                    sample['token'] = token
                     sample['len_ocr'] = at.len_ocr
                     sample['len_gs'] = len(at.gs)
                     parts = key.split('/')
