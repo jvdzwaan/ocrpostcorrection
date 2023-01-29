@@ -4,8 +4,8 @@
 __all__ = ['maxNbCandidate', 'predictions_to_labels', 'separate_subtoken_predictions', 'merge_subtoken_predictions',
            'gather_token_predictions', 'labels2label_str', 'extract_icdar_output', 'predictions2icdar_output',
            'create_entity', 'extract_entity_output', 'predictions2entity_output', 'create_perfect_icdar_output',
-           'EvalContext', 'reshape_input_errors', 'runEvaluation', 'icdar_output2simple_correction_dataset_df',
-           'aggregate_results', 'reduce_dataset']
+           'EvalContext', 'reshape_input_errors', 'runEvaluation', 'read_results',
+           'icdar_output2simple_correction_dataset_df', 'aggregate_results', 'reduce_dataset']
 
 # %% ../nbs/03_utils.ipynb 2
 import codecs
@@ -721,7 +721,16 @@ def runEvaluation(datasetDirPath,  # path to the dataset directory (ex: r"./data
         print(strRes.replace(";", "\t"))
 
 
-# %% ../nbs/03_utils.ipynb 52
+# %% ../nbs/03_utils.ipynb 51
+def read_results(csv_file):
+    """Read csv with evaluation results"""
+    data = pd.read_csv(csv_file, sep=';')
+    data['language'] = data.File.apply(lambda x: x[:2])
+    data['subset'] = data.File.apply(lambda x: x.split('/')[1])
+
+    return data
+
+# %% ../nbs/03_utils.ipynb 53
 def icdar_output2simple_correction_dataset_df(output: Dict[str, Dict[str,Dict]], data: Dict[str, Text], dataset: str='test') -> pd.DataFrame:
     """Convert the icdar data error detection output to input for SimpleCorrectionDataset"""
     samples = []
@@ -751,7 +760,7 @@ def icdar_output2simple_correction_dataset_df(output: Dict[str, Dict[str,Dict]],
             samples.append(sample)
     return pd.DataFrame(samples)
 
-# %% ../nbs/03_utils.ipynb 56
+# %% ../nbs/03_utils.ipynb 57
 def aggregate_results(csv_file):
     data = pd.read_csv(csv_file, sep=';')
     data['language'] = data.File.apply(lambda x: x[:2])
@@ -759,7 +768,7 @@ def aggregate_results(csv_file):
 
     return data.groupby('language').mean()[['T1_Precision', 'T1_Recall', 'T1_Fmesure']]
 
-# %% ../nbs/03_utils.ipynb 58
+# %% ../nbs/03_utils.ipynb 59
 def reduce_dataset(dataset, n=5):
     """Return dataset with the first n samples for each split"""
     for split in dataset.keys():
