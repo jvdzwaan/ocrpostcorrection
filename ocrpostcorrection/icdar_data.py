@@ -225,6 +225,7 @@ def generate_data(in_dir: Path):
                     'score': scores,
                     'num_tokens': num_tokens,
                     'num_input_tokens': num_input_tokens})
+    md.sort_values('file_name', inplace=True)
     return data, md
 
 
