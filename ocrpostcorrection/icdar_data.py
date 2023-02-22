@@ -2,9 +2,13 @@
 
 # %% auto 0
 __all__ = ['remove_label_and_nl', 'AlignedToken', 'tokenize_aligned', 'InputToken', 'get_input_tokens', 'Text', 'clean',
-           'normalized_ed', 'process_text', 'generate_data', 'window', 'generate_sentences', 'process_input_ocr']
+           'normalized_ed', 'process_text', 'generate_data', 'get_intermediate_data', 'window', 'generate_sentences',
+           'process_input_ocr']
 
 # %% ../nbs/00_icdar_data.ipynb 2
+import tempfile
+import shutil
+
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -13,6 +17,9 @@ from loguru import logger
 import edlib
 import pandas as pd
 from tqdm import tqdm
+
+from typing import Dict, Text as TypingText, Tuple
+from zipfile import ZipFile
 
 # %% ../nbs/00_icdar_data.ipynb 5
 def remove_label_and_nl(line: str):
@@ -230,6 +237,37 @@ def generate_data(in_dir: Path):
 
 
 # %% ../nbs/00_icdar_data.ipynb 34
+def get_intermediate_data(zip_file: TypingText) -> Tuple[Dict[str, Text], pd.DataFrame, Dict[str, Text], pd.DataFrame]:
+    """Get the data and metadata files for the train and test data on the fly from the zip file."""
+    
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        with ZipFile(zip_file, 'r') as zip_object:
+            zip_object.extractall(path=tmp_dir)
+
+        # Copy Finnish data
+        path = Path(tmp_dir)
+        in_dir = path/'TOOLS_for_Finnish_data'
+        inputs = {
+            'evaluation': 'ICDAR2019_POCR_competition_evaluation_4M_without_Finnish',
+            'full': 'ICDAR2019_POCR_competition_full_22M_without_Finnish',
+            'training': 'ICDAR2019_POCR_competition_training_18M_without_Finnish',
+        }
+        for from_dir, to_dir in inputs.items():
+            for in_file in (in_dir/'output'/from_dir).iterdir():
+                if in_file.is_file():
+                    out_file = path/to_dir/'FI'/'FI1'/in_file.name
+                    shutil.copy2(in_file, out_file)
+
+        # Get paths for train and test data
+        train_path = Path(tmp_dir)/'ICDAR2019_POCR_competition_training_18M_without_Finnish'
+        test_path = Path(tmp_dir)/'ICDAR2019_POCR_competition_evaluation_4M_without_Finnish'
+
+        data, md = generate_data(train_path)
+        data_test, md_test = generate_data(test_path)
+
+        return (data, md, data_test, md_test)
+
+# %% ../nbs/00_icdar_data.ipynb 36
 def window(iterable, size=2):
     """Given an iterable, return all subsequences of a certain size"""
     i = iter(iterable)
@@ -244,7 +282,7 @@ def window(iterable, size=2):
         win = win[1:] + [e]
         yield win
 
-# %% ../nbs/00_icdar_data.ipynb 36
+# %% ../nbs/00_icdar_data.ipynb 38
 def _process_sequence(key, i, res, sents, labels, keys, start_tokens, scores, languages):
     ocr = [t.ocr for t in res]
     lbls = [t.label for t in res]
@@ -312,7 +350,7 @@ def generate_sentences(df, data, size=15, step=10):
 
     return data
 
-# %% ../nbs/00_icdar_data.ipynb 38
+# %% ../nbs/00_icdar_data.ipynb 40
 import re
 
 def process_input_ocr(text: str) -> Text:
