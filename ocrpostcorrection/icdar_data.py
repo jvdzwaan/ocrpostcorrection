@@ -233,10 +233,11 @@ def generate_data(in_dir: Path):
                     'num_tokens': num_tokens,
                     'num_input_tokens': num_input_tokens})
     md.sort_values('file_name', inplace=True)
+    md.reset_index(inplace=True, drop=True)
     return data, md
 
 
-# %% ../nbs/00_icdar_data.ipynb 34
+# %% ../nbs/00_icdar_data.ipynb 33
 def get_intermediate_data(zip_file: TypingText) -> Tuple[Dict[str, Text], pd.DataFrame, Dict[str, Text], pd.DataFrame]:
     """Get the data and metadata files for the train and test data on the fly from the zip file."""
     
@@ -267,7 +268,7 @@ def get_intermediate_data(zip_file: TypingText) -> Tuple[Dict[str, Text], pd.Dat
 
         return (data, md, data_test, md_test)
 
-# %% ../nbs/00_icdar_data.ipynb 36
+# %% ../nbs/00_icdar_data.ipynb 35
 def window(iterable, size=2):
     """Given an iterable, return all subsequences of a certain size"""
     i = iter(iterable)
@@ -282,7 +283,7 @@ def window(iterable, size=2):
         win = win[1:] + [e]
         yield win
 
-# %% ../nbs/00_icdar_data.ipynb 38
+# %% ../nbs/00_icdar_data.ipynb 37
 def _process_sequence(key, i, res, sents, labels, keys, start_tokens, scores, languages):
     ocr = [t.ocr for t in res]
     lbls = [t.label for t in res]
@@ -350,7 +351,7 @@ def generate_sentences(df, data, size=15, step=10):
 
     return data
 
-# %% ../nbs/00_icdar_data.ipynb 40
+# %% ../nbs/00_icdar_data.ipynb 39
 import re
 
 def process_input_ocr(text: str) -> Text:
