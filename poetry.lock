@@ -1469,6 +1469,33 @@ docs = ["furo (>=2022.12.7)", "proselint (>=0.13)", "sphinx (>=6.1.3)", "sphinx-
 test = ["appdirs (==1.4.4)", "covdefaults (>=2.2.2)", "pytest (>=7.2.1)", "pytest-cov (>=4)", "pytest-mock (>=3.10)"]
 
 [[package]]
+name = "poetry-core"
+version = "1.5.2"
+description = "Poetry PEP 517 Build Backend"
+category = "dev"
+optional = false
+python-versions = ">=3.7,<4.0"
+files = [
+    {file = "poetry_core-1.5.2-py3-none-any.whl", hash = "sha256:832d40a1ea5fd10c0f648d0575cadddc8b79f06f91d83a1f1a73a7e1dfacfbd7"},
+    {file = "poetry_core-1.5.2.tar.gz", hash = "sha256:c6556c3b1ec5b8668e6ef5a4494726bc41d31907339425e194e78a6178436c14"},
+]
+
+[[package]]
+name = "poetry2setup"
+version = "1.1.0"
+description = "Convert python-poetry to setup.py"
+category = "dev"
+optional = false
+python-versions = ">=3.6,<4.0"
+files = [
+    {file = "poetry2setup-1.1.0-py3-none-any.whl", hash = "sha256:aad820a89d94ae88db9f39a4fc57337963a8faf59830f4f93be171852e67a697"},
+    {file = "poetry2setup-1.1.0.tar.gz", hash = "sha256:87591578fc0b68e1716261c5f3ef7ed436cdc0e1174e629a36de4244c245beeb"},
+]
+
+[package.dependencies]
+poetry-core = ">=1.0.0,<2.0.0"
+
+[[package]]
 name = "pre-commit"
 version = "3.2.0"
 description = "A framework for managing and maintaining multi-language pre-commit hooks."
@@ -2484,4 +2511,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "b2b779bc22942919262fdf70852e894dded5f03ab0335250caed5d59d36578a5"
+content-hash = "587c6c877a68a2f748be8bffb127923d1785906e4ef5640575e9c4d309f5077a"
