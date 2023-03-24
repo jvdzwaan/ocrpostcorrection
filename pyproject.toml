@@ -21,6 +21,8 @@ transformers = "^4.26.1"
 nbdev = "^2.3.12"
 pre-commit = "^3.2.0"
 poetry2setup = "^1.1.0"
+jupyter = "^1.0.0"
+notebook = "^6.5.3"
 
 [build-system]
 requires = ["poetry-core"]
