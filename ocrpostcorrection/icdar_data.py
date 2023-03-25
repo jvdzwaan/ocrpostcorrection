@@ -6,11 +6,12 @@ __all__ = ['remove_label_and_nl', 'AlignedToken', 'tokenize_aligned', 'InputToke
            'generate_sentences', 'process_input_ocr']
 
 # %% ../nbs/00_icdar_data.ipynb 2
+import re
 import shutil
 import tempfile
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict
+from typing import Dict, List
 from typing import Text as TypingText
 from typing import Tuple
 from zipfile import ZipFile
@@ -37,16 +38,16 @@ class AlignedToken:
     len_ocr: int  # The lentgh of the OCR string
 
 # %% ../nbs/00_icdar_data.ipynb 9
-def tokenize_aligned(ocr_aligned: str, gs_aligned: str):
+def tokenize_aligned(ocr_aligned: str, gs_aligned: str) -> List[AlignedToken]:
     """Get a list of AlignedTokens from the aligned OCR and GS strings"""
 
     ocr_cursor = 0
     start = 0
 
-    ocr_token_chars = []
-    gs_token_chars = []
-    ocr_token_chars_aligned = []
-    gs_token_chars_aligned = []
+    ocr_token_chars: List[str] = []
+    gs_token_chars: List[str] = []
+    ocr_token_chars_aligned: List[str] = []
+    gs_token_chars_aligned: List[str] = []
 
     tokens = []
 
@@ -153,7 +154,7 @@ class Text:
     score: float
 
 # %% ../nbs/00_icdar_data.ipynb 23
-def clean(string: str):
+def clean(string: str) -> str:
     """Remove alignment characters from a text"""
     string = string.replace("@", "")
     string = string.replace("#", "")
@@ -161,17 +162,20 @@ def clean(string: str):
     return string
 
 # %% ../nbs/00_icdar_data.ipynb 24
-def normalized_ed(ed: int, ocr: str, gs: str):
+def normalized_ed(ed: int, ocr: str, gs: str) -> float:
     """Returns the normalized editdistance"""
     score = 0.0
-    l = max(len(ocr), len(gs))
-    if l > 0:
-        score = ed / l
+    longest = max(len(ocr), len(gs))
+    if longest > 0:
+        score = ed / longest
     return score
 
 # %% ../nbs/00_icdar_data.ipynb 25
 def process_text(in_file: Path) -> Text:
-    """Extract AlignedTokens, InputTokens from a text file and calculate normalized editdistance"""
+    """Process a text from the ICDAR dataset
+
+    Extract AlignedTokens, InputTokens, and calculate normalized editdistance.
+    """
     with open(in_file) as f:
         lines = f.readlines()
 
@@ -194,7 +198,8 @@ def process_text(in_file: Path) -> Text:
             assert token.ocr == input_token.strip()
         except AssertionError:
             logger.warning(
-                f"OCR != aligned OCR: Text: {str(in_file)}; ocr: {repr(token.ocr)}; ocr_input: {repr(input_token)}"
+                f"OCR != aligned OCR: Text: {str(in_file)}; ocr: {repr(token.ocr)}; "
+                + f"ocr_input: {repr(input_token)}"
             )
             raise
 
@@ -216,7 +221,7 @@ def process_text(in_file: Path) -> Text:
     return Text(ocr_input, tokens, input_tokens, score)
 
 # %% ../nbs/00_icdar_data.ipynb 31
-def generate_data(in_dir: Path):
+def generate_data(in_dir: Path) -> Tuple[Dict[str, Text], pd.DataFrame]:
     """Process all texts in the dataset and return a dataframe with metadata"""
 
     data = {}
@@ -288,7 +293,7 @@ def extract_icdar_data(out_dir: TypingText, zip_file: TypingText) -> Tuple[Path,
 def get_intermediate_data(
     zip_file: TypingText,
 ) -> Tuple[Dict[str, Text], pd.DataFrame, Dict[str, Text], pd.DataFrame]:
-    """Get the data and metadata files for the train and test data on the fly from the zip file."""
+    """Get the data and metadata for the train and test sets from the zip file."""
 
     with tempfile.TemporaryDirectory() as tmp_dir:
         train_path, test_path = extract_icdar_data(tmp_dir, zip_file)
@@ -315,8 +320,18 @@ def window(iterable, size=2):
 
 # %% ../nbs/00_icdar_data.ipynb 37
 def _process_sequence(
-    key, i, res, sents, labels, keys, start_tokens, scores, languages
-):
+    key: str,
+    i: int,
+    res,
+    sents: List[List[str]],
+    labels: List[List[int]],
+    keys: List[str],
+    start_tokens: List[int],
+    scores: List[float],
+    languages: List[str],
+) -> Tuple[
+    List[List[str]], List[List[int]], List[str], List[int], List[float], List[str]
+]:
     ocr = [t.ocr for t in res]
     lbls = [t.label for t in res]
     gs = []
@@ -343,16 +358,18 @@ def _process_sequence(
     return (sents, labels, keys, start_tokens, scores, languages)
 
 
-def generate_sentences(df, data, size=15, step=10):
+def generate_sentences(
+    df: pd.DataFrame, data: Dict[str, Text], size: int = 15, step: int = 10
+) -> pd.DataFrame:
     """Generate sequences of a certain length and possible overlap"""
-    sents = []
-    labels = []
-    keys = []
-    start_tokens = []
-    scores = []
-    languages = []
+    sents: List[List[str]] = []
+    labels: List[List[int]] = []
+    keys: List[str] = []
+    start_tokens: List[int] = []
+    scores: List[float] = []
+    languages: List[str] = []
 
-    for idx, row in tqdm(df.iterrows()):
+    for _, row in tqdm(df.iterrows()):
         key = row.file_name
         tokens = data[key].input_tokens
 
@@ -375,7 +392,7 @@ def generate_sentences(df, data, size=15, step=10):
             key, i, res, sents, labels, keys, start_tokens, scores, languages
         )
 
-    data = pd.DataFrame(
+    output = pd.DataFrame(
         {
             "key": keys,
             "start_token_id": start_tokens,
@@ -386,17 +403,14 @@ def generate_sentences(df, data, size=15, step=10):
         }
     )
 
-    # Adding the final sequence may lead to duplicate rows. Remove thos
-    data.drop_duplicates(
+    # Adding the final sequence may lead to duplicate rows. Remove those
+    output.drop_duplicates(
         subset=["key", "start_token_id"], keep="first", inplace=True, ignore_index=True
     )
 
-    return data
+    return output
 
 # %% ../nbs/00_icdar_data.ipynb 39
-import re
-
-
 def process_input_ocr(text: str) -> Text:
     """Generate Text object for OCR input text (without aligned gold standard)"""
     tokens = []
