@@ -10,16 +10,15 @@ __all__ = ['UNK_IDX', 'PAD_IDX', 'BOS_IDX', 'EOS_IDX', 'special_symbols', 'get_t
 # %% ../nbs/02_error_correction.ipynb 2
 import dataclasses
 import random
-
 from functools import partial
 from itertools import chain
-from typing import Iterable, List, Dict
+from typing import Dict, Iterable, List
 
 import pandas as pd
 import torch
 import torch.nn as nn
-from torch import optim
 import torch.nn.functional as F
+from torch import optim
 from torch.nn.utils.rnn import pad_sequence
 from torch.utils.data import Dataset
 from torchtext.vocab import build_vocab_from_iterator

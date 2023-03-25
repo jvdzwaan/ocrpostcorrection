@@ -6,20 +6,19 @@ __all__ = ['remove_label_and_nl', 'AlignedToken', 'tokenize_aligned', 'InputToke
            'generate_sentences', 'process_input_ocr']
 
 # %% ../nbs/00_icdar_data.ipynb 2
-import tempfile
 import shutil
-
+import tempfile
 from dataclasses import dataclass
 from pathlib import Path
-
-from loguru import logger
+from typing import Dict
+from typing import Text as TypingText
+from typing import Tuple
+from zipfile import ZipFile
 
 import edlib
 import pandas as pd
+from loguru import logger
 from tqdm import tqdm
-
-from typing import Dict, Text as TypingText, Tuple
-from zipfile import ZipFile
 
 # %% ../nbs/00_icdar_data.ipynb 5
 def remove_label_and_nl(line: str):
