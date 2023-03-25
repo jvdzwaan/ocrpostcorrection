@@ -10,20 +10,26 @@ from functools import partial
 def tokenize_and_align_labels_with_tokenizer(tokenizer, examples, return_tensors=None):
     """Tokenize function, to be used as partial with instatiated tokenizer"""
     # Source: https://huggingface.co/docs/transformers/custom_datasets#token-classification-with-wnut-emerging-entities
-    tokenized_inputs = tokenizer(examples["tokens"], 
-                                 truncation=True, 
-                                 is_split_into_words=True, 
-                                 return_tensors=return_tensors)
+    tokenized_inputs = tokenizer(
+        examples["tokens"],
+        truncation=True,
+        is_split_into_words=True,
+        return_tensors=return_tensors,
+    )
 
     labels = []
     for i, label in enumerate(examples[f"tags"]):
-        word_ids = tokenized_inputs.word_ids(batch_index=i)  # Map tokens to their respective word.
+        word_ids = tokenized_inputs.word_ids(
+            batch_index=i
+        )  # Map tokens to their respective word.
         previous_word_idx = None
         label_ids = []
-        for word_idx in word_ids:                            # Set the special tokens to -100.
+        for word_idx in word_ids:  # Set the special tokens to -100.
             if word_idx is None:
                 label_ids.append(-100)
-            elif word_idx != previous_word_idx:              # Only label the first token of a given word.
+            elif (
+                word_idx != previous_word_idx
+            ):  # Only label the first token of a given word.
                 label_ids.append(label[word_idx])
 
         labels.append(label_ids)
@@ -34,5 +40,9 @@ def tokenize_and_align_labels_with_tokenizer(tokenizer, examples, return_tensors
 
 # %% ../nbs/01_token_classification.ipynb 5
 def tokenize_and_align_labels(tokenizer, return_tensors=None):
-    """Function to tokenize samples and align the labels"""""
-    return partial(tokenize_and_align_labels_with_tokenizer, tokenizer, return_tensors=return_tensors)
+    """Function to tokenize samples and align the labels""" ""
+    return partial(
+        tokenize_and_align_labels_with_tokenizer,
+        tokenizer,
+        return_tensors=return_tensors,
+    )
