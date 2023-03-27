@@ -96,34 +96,43 @@ def labels2label_str(labels, text_key):
 
 # %% ../nbs/03_utils.ipynb 18
 def extract_icdar_output(label_str, input_tokens):
-    # print(label_str, input_tokens)
-    # print(len(label_str), len(input_tokens))
+    keys = {}
+    started = False
+    start_idx = -1
+    num_tokens = 0
+    for input_token, label in zip(input_tokens, label_str):
+        if label == "1":
+            if started:
+                keys[start_idx] = num_tokens
+                started = False
+                start_idx = -1
+                num_tokens = 0
+
+            started = True
+            start_idx = input_token.aligned_start
+            num_tokens += 1 + input_token.aligned_index
+        elif label == "2":
+            if not started:
+                started = True
+                start_idx = input_token.aligned_start
+                num_tokens += input_token.aligned_index
+            num_tokens += 1
+        else:
+            # label = '0'
+            if started:
+                started = False
+                keys[start_idx] = num_tokens
+    # Add final ocr mistake
+    if started:
+        keys[start_idx] = num_tokens
+
     text_output = {}
-
-    # Correct use of 2 (always following a 1)
-    regex = r"12*"
-
-    for match in re.finditer(regex, label_str):
-        # print(match)
-        # print(match.group())
-        num_tokens = len(match.group())
-        # print(match.start(), len(input_tokens))
-        idx = input_tokens[match.start()].start
-        text_output[f"{idx}:{num_tokens}"] = {}
-
-    # Incorrect use of 2 (following a 0) -> interpret first 2 as 1
-    regex = r"02+"
-
-    for match in re.finditer(regex, label_str):
-        # print(match)
-        # print(match.group())
-        num_tokens = len(match.group()) - 1
-        idx = input_tokens[match.start() + 1].start
-        text_output[f"{idx}:{num_tokens}"] = {}
+    for offset, num_tokens in keys.items():
+        text_output[f"{offset}:{num_tokens}"] = {}
 
     return text_output
 
-# %% ../nbs/03_utils.ipynb 24
+# %% ../nbs/03_utils.ipynb 27
 def _predictions2label_str(samples, predictions, tokenizer):
     """Convert predictions into label strings"""
     # print('samples', len(samples))
@@ -174,7 +183,7 @@ def _predictions2label_str(samples, predictions, tokenizer):
 
     return output
 
-# %% ../nbs/03_utils.ipynb 25
+# %% ../nbs/03_utils.ipynb 28
 def predictions2icdar_output(samples, predictions, tokenizer, data_test):
     """Convert predictions into icdar output format"""
     converted = _predictions2label_str(samples, predictions, tokenizer)
@@ -188,14 +197,14 @@ def predictions2icdar_output(samples, predictions, tokenizer, data_test):
 
     return output
 
-# %% ../nbs/03_utils.ipynb 30
+# %% ../nbs/03_utils.ipynb 33
 def create_entity(entity_tokens):
     start = entity_tokens[0].start
     end = entity_tokens[-1].start + entity_tokens[-1].len_ocr
     word = " ".join([token.ocr for token in entity_tokens])
     return {"entity": "OCR mistake", "word": word, "start": start, "end": end}
 
-# %% ../nbs/03_utils.ipynb 35
+# %% ../nbs/03_utils.ipynb 38
 def extract_entity_output(label_str: str, input_tokens):
     """Convert label string to the entity output format"""
     entity_tokens = []
@@ -219,7 +228,7 @@ def extract_entity_output(label_str: str, input_tokens):
 
     return entities
 
-# %% ../nbs/03_utils.ipynb 37
+# %% ../nbs/03_utils.ipynb 40
 def predictions2entity_output(samples, predictions, tokenizer, data_test):
     """Convert predictions into entity output format"""
     converted = _predictions2label_str(samples, predictions, tokenizer)
@@ -233,7 +242,7 @@ def predictions2entity_output(samples, predictions, tokenizer, data_test):
 
     return output
 
-# %% ../nbs/03_utils.ipynb 39
+# %% ../nbs/03_utils.ipynb 42
 def create_perfect_icdar_output(data):
     output = {}
     for key, text_obj in data.items():
@@ -241,10 +250,10 @@ def create_perfect_icdar_output(data):
         output[key] = extract_icdar_output(label_str, data[key].input_tokens)
     return output
 
-# %% ../nbs/03_utils.ipynb 42
+# %% ../nbs/03_utils.ipynb 45
 maxNbCandidate = 6
 
-# %% ../nbs/03_utils.ipynb 43
+# %% ../nbs/03_utils.ipynb 46
 ################# CLASS FOR STORING CURRENT FILE CONTEXT  ################
 class EvalContext:
     # Default symbols used for the alignment and for ignoring some tokens
@@ -707,7 +716,7 @@ class EvalContext:
         for k in sortedKeysDic:
             print("%s:%s" % (str(k), str(d[k])))
 
-# %% ../nbs/03_utils.ipynb 45
+# %% ../nbs/03_utils.ipynb 48
 def reshape_input_errors(tokenPosErr, evalContext, verbose=False):
     # Store tokens' positions in mem
     tokensPos = [0] + [
@@ -778,7 +787,7 @@ def reshape_input_errors(tokenPosErr, evalContext, verbose=False):
 
     return tokenPosErrReshaped
 
-# %% ../nbs/03_utils.ipynb 50
+# %% ../nbs/03_utils.ipynb 53
 def runEvaluation(
     datasetDirPath,  # path to the dataset directory (ex: r"./dataset_sample")
     pathInputJsonErrorsCorrections,  # # input path to the JSON result (ex: r"./inputErrCor_sample.json"), format given on https://sites.google.com/view/icdar2017-postcorrectionocr/evaluation)
@@ -867,7 +876,7 @@ def runEvaluation(
         # Print results in the console
         print(strRes.replace(";", "\t"))
 
-# %% ../nbs/03_utils.ipynb 51
+# %% ../nbs/03_utils.ipynb 54
 def read_results(csv_file):
     """Read csv with evaluation results"""
     data = pd.read_csv(csv_file, sep=";")
@@ -876,7 +885,7 @@ def read_results(csv_file):
 
     return data
 
-# %% ../nbs/03_utils.ipynb 53
+# %% ../nbs/03_utils.ipynb 56
 def icdar_output2simple_correction_dataset_df(
     output: Dict[str, Dict[str, Dict]], data: Dict[str, Text], dataset: str = "test"
 ) -> pd.DataFrame:
@@ -908,7 +917,7 @@ def icdar_output2simple_correction_dataset_df(
             samples.append(sample)
     return pd.DataFrame(samples)
 
-# %% ../nbs/03_utils.ipynb 57
+# %% ../nbs/03_utils.ipynb 60
 def aggregate_results(csv_file):
     data = pd.read_csv(csv_file, sep=";")
     data["language"] = data.File.apply(lambda x: x[:2])
@@ -916,7 +925,7 @@ def aggregate_results(csv_file):
 
     return data.groupby("language").mean()[["T1_Precision", "T1_Recall", "T1_Fmesure"]]
 
-# %% ../nbs/03_utils.ipynb 59
+# %% ../nbs/03_utils.ipynb 62
 def reduce_dataset(dataset, n=5):
     """Return dataset with the first n samples for each split"""
     for split in dataset.keys():

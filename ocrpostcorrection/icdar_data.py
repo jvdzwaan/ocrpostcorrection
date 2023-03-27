@@ -117,31 +117,54 @@ class InputToken:
     ocr: str
     gs: str
     start: int
+    aligned_start: int
+    aligned_index: int
     len_ocr: int
     label: int
 
 # %% ../nbs/00_icdar_data.ipynb 13
 def get_input_tokens(aligned_token: AlignedToken):
     """Tokenize an AlignedToken into subtokens and assign task 1 labels"""
+    input_tokens = []
     if aligned_token.ocr == aligned_token.gs:
-        yield InputToken(
-            aligned_token.ocr,
-            aligned_token.gs,
-            aligned_token.start,
-            len(aligned_token.ocr),
-            0,
+        input_tokens.append(
+            InputToken(
+                ocr=aligned_token.ocr,
+                gs=aligned_token.gs,
+                start=aligned_token.start,
+                aligned_start=aligned_token.start,
+                aligned_index=0,
+                len_ocr=len(aligned_token.ocr),
+                label=0,
+            )
         )
     else:
         parts = aligned_token.ocr.split(" ")
         new_start = aligned_token.start
         for i, part in enumerate(parts):
             if i == 0:
-                yield InputToken(
-                    part, aligned_token.gs, aligned_token.start, len(part), 1
+                token = InputToken(
+                    ocr=part,
+                    gs=aligned_token.gs,
+                    start=aligned_token.start,
+                    aligned_start=aligned_token.start,
+                    aligned_index=i,
+                    len_ocr=len(part),
+                    label=1,
                 )
             else:
-                yield InputToken(part, "", new_start, len(part), 2)
+                token = InputToken(
+                    ocr=part,
+                    gs="",
+                    start=new_start,
+                    aligned_start=aligned_token.start,
+                    aligned_index=i,
+                    len_ocr=len(part),
+                    label=2,
+                )
             new_start += len(part) + 1
+            input_tokens.append(token)
+    return input_tokens
 
 # %% ../nbs/00_icdar_data.ipynb 22
 @dataclass
@@ -421,5 +444,15 @@ def process_input_ocr(text: str) -> Text:
         len_ocr = len(ocr)
         label = 0
 
-        tokens.append(InputToken(ocr, gs, start, len_ocr, label))
+        tokens.append(
+            InputToken(
+                ocr=ocr,
+                gs=gs,
+                start=start,
+                aligned_start=-1,
+                aligned_index=-1,
+                len_ocr=len_ocr,
+                label=label,
+            )
+        )
     return Text(text, tokens=[], input_tokens=tokens, score=-1)
