@@ -1,0 +1,3 @@
+[OCR_toInput] INEVR Hrfl 124879 Major Long ow.
+[OCR_aligned] I@NEV@R Hrfl 124879 Major Long ow.
+[ GS_aligned] I NEVER ########### Major Longhow.
