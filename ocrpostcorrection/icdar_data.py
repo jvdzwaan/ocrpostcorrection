@@ -6,6 +6,7 @@ __all__ = ['remove_label_and_nl', 'AlignedToken', 'tokenize_aligned', 'InputToke
            'get_intermediate_data', 'window', 'generate_sentences', 'process_input_ocr']
 
 # %% ../nbs/00_icdar_data.ipynb 2
+import os
 import re
 import shutil
 import tempfile
@@ -21,11 +22,11 @@ import pandas as pd
 from loguru import logger
 from tqdm import tqdm
 
-# %% ../nbs/00_icdar_data.ipynb 5
+# %% ../nbs/00_icdar_data.ipynb 4
 def remove_label_and_nl(line: str):
     return line.strip()[14:]
 
-# %% ../nbs/00_icdar_data.ipynb 8
+# %% ../nbs/00_icdar_data.ipynb 7
 @dataclass
 class AlignedToken:
     """Dataclass for storing aligned tokens"""
@@ -37,7 +38,7 @@ class AlignedToken:
     start: int  # The index of the first character in the OCR text
     len_ocr: int  # The lentgh of the OCR string
 
-# %% ../nbs/00_icdar_data.ipynb 9
+# %% ../nbs/00_icdar_data.ipynb 8
 def tokenize_aligned(ocr_aligned: str, gs_aligned: str) -> List[AlignedToken]:
     """Get a list of AlignedTokens from the aligned OCR and GS strings"""
 
@@ -109,7 +110,7 @@ def tokenize_aligned(ocr_aligned: str, gs_aligned: str) -> List[AlignedToken]:
 
     return tokens
 
-# %% ../nbs/00_icdar_data.ipynb 12
+# %% ../nbs/00_icdar_data.ipynb 11
 @dataclass
 class InputToken:
     """Dataclass for the tokenization within AlignedTokens"""
@@ -120,7 +121,7 @@ class InputToken:
     len_ocr: int
     label: int
 
-# %% ../nbs/00_icdar_data.ipynb 13
+# %% ../nbs/00_icdar_data.ipynb 12
 def leading_whitespace_offset(string: str) -> int:
     """
     Return the leading whitespace offset for an aligned ocr string
@@ -143,7 +144,7 @@ def leading_whitespace_offset(string: str) -> int:
 
     return offset
 
-# %% ../nbs/00_icdar_data.ipynb 18
+# %% ../nbs/00_icdar_data.ipynb 17
 def get_input_tokens(aligned_token: AlignedToken):
     """Tokenize an AlignedToken into subtokens and assign task 1 labels"""
     input_tokens = []
@@ -183,7 +184,7 @@ def get_input_tokens(aligned_token: AlignedToken):
             input_tokens.append(token)
     return input_tokens
 
-# %% ../nbs/00_icdar_data.ipynb 27
+# %% ../nbs/00_icdar_data.ipynb 26
 @dataclass
 class Text:
     """Dataclass for storing a text in the ICDAR data format"""
@@ -193,7 +194,7 @@ class Text:
     input_tokens: list
     score: float
 
-# %% ../nbs/00_icdar_data.ipynb 28
+# %% ../nbs/00_icdar_data.ipynb 27
 def clean(string: str) -> str:
     """Remove alignment characters from a text"""
     string = string.replace("@", "")
@@ -201,7 +202,7 @@ def clean(string: str) -> str:
 
     return string
 
-# %% ../nbs/00_icdar_data.ipynb 29
+# %% ../nbs/00_icdar_data.ipynb 28
 def normalized_ed(ed: int, ocr: str, gs: str) -> float:
     """Returns the normalized editdistance"""
     score = 0.0
@@ -210,7 +211,7 @@ def normalized_ed(ed: int, ocr: str, gs: str) -> float:
         score = ed / longest
     return score
 
-# %% ../nbs/00_icdar_data.ipynb 30
+# %% ../nbs/00_icdar_data.ipynb 29
 def process_text(in_file: Path) -> Text:
     """Process a text from the ICDAR dataset
 
@@ -260,29 +261,30 @@ def process_text(in_file: Path) -> Text:
 
     return Text(ocr_input, tokens, input_tokens, score)
 
-# %% ../nbs/00_icdar_data.ipynb 36
+# %% ../nbs/00_icdar_data.ipynb 35
 def generate_data(in_dir: Path) -> Tuple[Dict[str, Text], pd.DataFrame]:
     """Process all texts in the dataset and return a dataframe with metadata"""
 
     data = {}
 
     file_languages = []
+    file_subsets = []
     file_names = []
     scores = []
     num_tokens = []
     num_input_tokens = []
 
     for language_dir in tqdm(in_dir.iterdir()):
-        # print(language_dir.stem)
-        language = language_dir.stem
-
         for text_file in language_dir.rglob("*.txt"):
             # print(text_file)
             # print(text_file.relative_to(in_dir))
             key = str(text_file.relative_to(in_dir))
             data[key] = process_text(text_file)
 
+            language, subset, _ = key.split(os.sep)
+
             file_languages.append(language)
+            file_subsets.append(subset)
             file_names.append(key)
             scores.append(data[key].score)
             num_tokens.append(len(data[key].tokens))
@@ -290,6 +292,7 @@ def generate_data(in_dir: Path) -> Tuple[Dict[str, Text], pd.DataFrame]:
     md = pd.DataFrame(
         {
             "language": file_languages,
+            "subset": file_subsets,
             "file_name": file_names,
             "score": scores,
             "num_tokens": num_tokens,
@@ -300,7 +303,7 @@ def generate_data(in_dir: Path) -> Tuple[Dict[str, Text], pd.DataFrame]:
     md.reset_index(inplace=True, drop=True)
     return data, md
 
-# %% ../nbs/00_icdar_data.ipynb 38
+# %% ../nbs/00_icdar_data.ipynb 37
 def extract_icdar_data(out_dir: TypingText, zip_file: TypingText) -> Tuple[Path, Path]:
     with ZipFile(zip_file, "r") as zip_object:
         zip_object.extractall(path=out_dir)
@@ -343,7 +346,7 @@ def get_intermediate_data(
 
     return (data, md, data_test, md_test)
 
-# %% ../nbs/00_icdar_data.ipynb 40
+# %% ../nbs/00_icdar_data.ipynb 39
 def window(iterable, size=2):
     """Given an iterable, return all subsequences of a certain size"""
     i = iter(iterable)
@@ -358,7 +361,7 @@ def window(iterable, size=2):
         win = win[1:] + [e]
         yield win
 
-# %% ../nbs/00_icdar_data.ipynb 42
+# %% ../nbs/00_icdar_data.ipynb 41
 def _process_sequence(
     key: str,
     i: int,
@@ -450,7 +453,7 @@ def generate_sentences(
 
     return output
 
-# %% ../nbs/00_icdar_data.ipynb 44
+# %% ../nbs/00_icdar_data.ipynb 43
 def process_input_ocr(text: str) -> Text:
     """Generate Text object for OCR input text (without aligned gold standard)"""
     tokens = []
