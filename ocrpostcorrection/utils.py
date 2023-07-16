@@ -890,7 +890,11 @@ def read_results(csv_file):
 def icdar_output2simple_correction_dataset_df(
     output: Dict[str, Dict[str, Dict]], data: Dict[str, Text], dataset: str = "test"
 ) -> pd.DataFrame:
-    """Convert the icdar data error detection output to input for SimpleCorrectionDataset"""
+    """Convert the icdar data error detection output to input for SimpleCorrectionDataset
+    
+    Because gold standard for input_tokens is not available, the dataset dataframe cannot
+    be used for evaluation anymore.
+    """
     samples = []
     for key, mistakes in output.items():
         text = data[key]
@@ -899,7 +903,7 @@ def icdar_output2simple_correction_dataset_df(
             parts = token.split(":")
             start_idx = int(parts[0])
             num_tokens = int(parts[0])
-            for at in text.tokens:
+            for at in text.input_tokens:
                 if at.start == start_idx:
                     sample["ocr"] = at.ocr
                     sample["gs"] = at.gs
