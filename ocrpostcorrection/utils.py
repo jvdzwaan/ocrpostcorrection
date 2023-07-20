@@ -5,7 +5,7 @@ __all__ = ['maxNbCandidate', 'predictions_to_labels', 'separate_subtoken_predict
            'gather_token_predictions', 'labels2label_str', 'extract_icdar_output', 'predictions2icdar_output',
            'create_entity', 'extract_entity_output', 'predictions2entity_output', 'create_perfect_icdar_output',
            'EvalContext', 'reshape_input_errors', 'runEvaluation', 'read_results',
-           'icdar_output2simple_correction_dataset_df', 'aggregate_results', 'reduce_dataset']
+           'icdar_output2simple_correction_dataset_df', 'aggregate_results', 'aggregate_ed_results', 'reduce_dataset']
 
 # %% ../nbs/03_utils.ipynb 2
 import codecs
@@ -923,14 +923,29 @@ def icdar_output2simple_correction_dataset_df(
     return pd.DataFrame(samples)
 
 # %% ../nbs/03_utils.ipynb 61
+def read_results(csv_file):
+    data = pd.read_csv(csv_file, sep=';')
+    data['language'] = data.File.apply(lambda x: x[:2])
+    data['subset'] = data.File.apply(lambda x: x.split('/')[1])
+
+    return data
+
+
 def aggregate_results(csv_file):
-    data = pd.read_csv(csv_file, sep=";")
-    data["language"] = data.File.apply(lambda x: x[:2])
-    data["subset"] = data.File.apply(lambda x: x.split("/")[1])
+    data = read_results(csv_file)
 
     return data.groupby("language").mean()[["T1_Precision", "T1_Recall", "T1_Fmesure"]]
 
-# %% ../nbs/03_utils.ipynb 63
+
+def aggregate_ed_results(csv_file):
+    data = read_results(csv_file)
+
+    data['ed_diff'] = data['T2_AvgLVDistOriginal'] - data['T2_AvgLVDistCorrected']
+    data['%ed_improvement'] = data['ed_diff'] / data['T2_AvgLVDistOriginal'] * 100
+
+    return data.groupby("language").mean()[['%ed_improvement']]    
+
+# %% ../nbs/03_utils.ipynb 64
 def reduce_dataset(dataset, n=5):
     """Return dataset with the first n samples for each split"""
     for split in dataset.keys():
