@@ -1,0 +1,81 @@
+,ocr,gs,ocr_aligned,gs_aligned,start,len_ocr,language,subset,dataset,len_gs,diff
+0,test- AAA,test-.AAA,test- AAA,test-.AAA,0,9,fr,fr_sample,train,9,0
+1,test-BBB,test- BBB,test@-BBB,test- BBB,10,8,fr,fr_sample,train,9,-1
+2,test-CCC,test- CCC,test-@CCC,test- CCC,19,8,fr,fr_sample,train,9,-1
+3,-DDD,DDD,-DDD, DDD,33,4,fr,fr_sample,train,3,1
+4,test- EEE,test-EEE,test- EEE,test-@EEE,38,9,fr,fr_sample,train,8,1
+5,test-FFF,test- FFF,test-@FFF,test- FFF,48,8,fr,fr_sample,train,9,-1
+6,test-GGG,test -GGG,test@-GGG,test -GGG,57,8,fr,fr_sample,train,9,-1
+7,test - HHH,test-HHH,test - HHH,test@-@HHH,66,10,fr,fr_sample,train,8,2
+8,test-III,test - III,test@-@III,test - III,77,8,fr,fr_sample,train,10,-2
+9,?,!,?,!,107,1,fr,fr_sample,train,1,0
+10,BRAENTSAX,FRAGMENT,BRA@@ENTSAX,FRAGMENT@@@,0,9,fr,fr_sample,train,8,1
+11,DEDA,DADA,DEDA,DADA,10,4,fr,fr_sample,train,4,0
+12,-DE,,-DE,###,23,3,fr,fr_sample,train,0,3
+13,GESTEDE GIRBERT,GESTEDEGIRBERT,GESTE@DE GIRBERT,GESTE@DE@GIRBERT,27,15,fr,fr_sample,train,14,1
+14,avtrouvé,avons trouvé,avtrouvé@@@@@@@,avons@@@ trouvé,56,8,fr,fr_sample,train,12,-4
+15,lesmanuscrit,le manuscrit,lesmanuscrit,le manuscrit,65,12,fr,fr_sample,train,12,0
+16,?,!,?,!,78,1,fr,fr_sample,train,1,0
+17,In,,In,##,0,2,en,eng_sample,val,0,2
+18,troe,tree,troe,tree,13,4,en,eng_sample,val,4,0
+19,peremial,perennial,perem@ial,perennial,23,8,en,eng_sample,val,9,-1
+20,eLngated,elongated,eL@ngated,elongated,46,8,en,eng_sample,val,9,-1
+21,"stein,","stem,","stein,","stem@,",55,6,en,eng_sample,val,5,1
+22,"or trunk,",",","or trunk,","########,",62,9,en,eng_sample,val,1,8
+23,suppor ing,supporting,suppor ing,supporting,72,10,en,eng_sample,val,10,0
+24,nest,most,nest,most,106,4,en,eng_sample,val,4,0
+25,species!,species.,species!,species.,111,8,en,eng_sample,val,8,0
+26,Test -hyhen.,.Testhyhen,Test -hyhen.,.Test@@hyhen,120,12,en,eng_sample,val,10,2
+27,In,,In,##,0,2,en,eng_sample,train,0,2
+28,troe,tree,troe,tree,13,4,en,eng_sample,train,4,0
+29,peremial,perennial,perem@ial,perennial,23,8,en,eng_sample,train,9,-1
+30,eLngated,elongated,eL@ngated,elongated,46,8,en,eng_sample,train,9,-1
+31,"stein,","stem,","stein,","stem@,",55,6,en,eng_sample,train,5,1
+32,"or trunk,",",","or trunk,","########,",62,9,en,eng_sample,train,1,8
+33,suppor ing,supporting,suppor ing,supporting,72,10,en,eng_sample,train,10,0
+34,nest,most,nest,most,106,4,en,eng_sample,train,4,0
+35,species!,species.,species!,species.,111,8,en,eng_sample,train,8,0
+36,Test -hyhen,Testhyhen,Test -hyhen,Test@@hyhen,120,11,en,eng_sample,train,9,2
+37,error,errors,error@,errors,137,5,en,eng_sample,train,6,-1
+38,C,CCC,C@@,CCC,151,1,en,eng_sample,train,3,-2
+39,34,3 4,3@4,3 4,153,2,en,eng_sample,train,3,-1
+40,test- AAA,test-.AAA,test- AAA,test-.AAA,0,9,fr,fr_sample,test,9,0
+41,test-BBB,test- BBB,test@-BBB,test- BBB,10,8,fr,fr_sample,test,9,-1
+42,test-CCC,test- CCC,test-@CCC,test- CCC,19,8,fr,fr_sample,test,9,-1
+43,-DDD,DDD,-DDD, DDD,33,4,fr,fr_sample,test,3,1
+44,test- EEE,test-EEE,test- EEE,test-@EEE,38,9,fr,fr_sample,test,8,1
+45,test-FFF,test- FFF,test-@FFF,test- FFF,48,8,fr,fr_sample,test,9,-1
+46,test-GGG,test -GGG,test@-GGG,test -GGG,57,8,fr,fr_sample,test,9,-1
+47,test - HHH,test-HHH,test - HHH,test@-@HHH,66,10,fr,fr_sample,test,8,2
+48,test-III,test - III,test@-@III,test - III,77,8,fr,fr_sample,test,10,-2
+49,?,!,?,!,107,1,fr,fr_sample,test,1,0
+50,BRAENTSAX,FRAGMENT,BRA@@ENTSAX,FRAGMENT@@@,0,9,fr,fr_sample,test,8,1
+51,DEDA,DADA,DEDA,DADA,10,4,fr,fr_sample,test,4,0
+52,-DE,,-DE,###,23,3,fr,fr_sample,test,0,3
+53,GESTEDE GIRBERT,GESTEDEGIRBERT,GESTE@DE GIRBERT,GESTE@DE@GIRBERT,27,15,fr,fr_sample,test,14,1
+54,avtrouvé,avons trouvé,avtrouvé@@@@@@@,avons@@@ trouvé,56,8,fr,fr_sample,test,12,-4
+55,lesmanuscrit,le manuscrit,lesmanuscrit,le manuscrit,65,12,fr,fr_sample,test,12,0
+56,?,!,?,!,78,1,fr,fr_sample,test,1,0
+57,In,,In,##,0,2,en,eng_sample,test,0,2
+58,troe,tree,troe,tree,13,4,en,eng_sample,test,4,0
+59,peremial,perennial,perem@ial,perennial,23,8,en,eng_sample,test,9,-1
+60,eLngated,elongated,eL@ngated,elongated,46,8,en,eng_sample,test,9,-1
+61,"stein,","stem,","stein,","stem@,",55,6,en,eng_sample,test,5,1
+62,"or trunk,",",","or trunk,","########,",62,9,en,eng_sample,test,1,8
+63,suppor ing,supporting,suppor ing,supporting,72,10,en,eng_sample,test,10,0
+64,nest,most,nest,most,106,4,en,eng_sample,test,4,0
+65,species!,species.,species!,species.,111,8,en,eng_sample,test,8,0
+66,Test -hyhen.,.Testhyhen,Test -hyhen.,.Test@@hyhen,120,12,en,eng_sample,test,10,2
+67,In,,In,##,0,2,en,eng_sample,test,0,2
+68,troe,tree,troe,tree,13,4,en,eng_sample,test,4,0
+69,peremial,perennial,perem@ial,perennial,23,8,en,eng_sample,test,9,-1
+70,eLngated,elongated,eL@ngated,elongated,46,8,en,eng_sample,test,9,-1
+71,"stein,","stem,","stein,","stem@,",55,6,en,eng_sample,test,5,1
+72,"or trunk,",",","or trunk,","########,",62,9,en,eng_sample,test,1,8
+73,suppor ing,supporting,suppor ing,supporting,72,10,en,eng_sample,test,10,0
+74,nest,most,nest,most,106,4,en,eng_sample,test,4,0
+75,species!,species.,species!,species.,111,8,en,eng_sample,test,8,0
+76,Test -hyhen,Testhyhen,Test -hyhen,Test@@hyhen,120,11,en,eng_sample,test,9,2
+77,error,errors,error@,errors,137,5,en,eng_sample,test,6,-1
+78,C,CCC,C@@,CCC,151,1,en,eng_sample,test,3,-2
+79,34,3 4,3@4,3 4,153,2,en,eng_sample,test,3,-1

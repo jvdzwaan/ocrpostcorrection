@@ -2,9 +2,9 @@
 
 # %% auto 0
 __all__ = ['UNK_IDX', 'PAD_IDX', 'BOS_IDX', 'EOS_IDX', 'special_symbols', 'get_tokens_with_OCR_mistakes', 'yield_tokens',
-           'generate_vocabs', 'SimpleCorrectionDataset', 'sequential_transforms', 'tensor_transform',
-           'get_text_transform', 'collate_fn_with_text_transform', 'collate_fn', 'EncoderRNN', 'AttnDecoderRNN',
-           'SimpleCorrectionSeq2seq', 'validate_model', 'GreedySearchDecoder', 'indices2string',
+           'generate_vocabs', 'SimpleCorrectionDataset', 'BertVectorsCorrectionDataset', 'sequential_transforms',
+           'tensor_transform', 'get_text_transform', 'collate_fn_with_text_transform', 'collate_fn', 'EncoderRNN',
+           'AttnDecoderRNN', 'SimpleCorrectionSeq2seq', 'validate_model', 'GreedySearchDecoder', 'indices2string',
            'predict_and_convert_to_str']
 
 # %% ../nbs/02_error_correction.ipynb 2
@@ -12,8 +12,11 @@ import dataclasses
 import random
 from functools import partial
 from itertools import chain
+from pathlib import Path
 from typing import Dict, Iterable, List
 
+import h5py
+import numpy as np
 import pandas as pd
 import torch
 import torch.nn as nn
@@ -117,7 +120,29 @@ class SimpleCorrectionDataset(Dataset):
 
         return [char for char in sample.ocr], [char for char in sample.gs]
 
-# %% ../nbs/02_error_correction.ipynb 24
+# %% ../nbs/02_error_correction.ipynb 22
+class BertVectorsCorrectionDataset(Dataset):
+    def __init__(self, data: pd.DataFrame, bert_vectors_file: Path, split_name: str, max_len: int=11):
+        ds = data.copy()
+        ds.reset_index(drop=True, inplace=True)
+        ds = ds.query(f'len_ocr < {max_len}').query(f'len_gs < {max_len}').copy()
+        ds.reset_index(drop=False, inplace=True)
+        self.ds = ds
+
+        f = h5py.File(bert_vectors_file, "r")
+        self.bert_vectors = f.get(split_name)
+
+    def __len__(self):
+        return self.ds.shape[0]
+
+    def __getitem__(self, idx):
+        sample = self.ds.loc[idx]
+        original_idx = sample["index"]
+        bert_vector = torch.as_tensor(np.array(self.bert_vectors[original_idx]))
+
+        return sample.ocr, sample.gs, bert_vector
+
+# %% ../nbs/02_error_correction.ipynb 27
 def sequential_transforms(*transforms):
     """Helper function to club together sequential operations"""
 
@@ -143,11 +168,11 @@ def get_text_transform(vocab_transform):
         )  # Add BOS/EOS and create tensor
     return text_transform
 
-# %% ../nbs/02_error_correction.ipynb 27
+# %% ../nbs/02_error_correction.ipynb 30
 def collate_fn_with_text_transform(text_transform, batch):
     """Function to collate data samples into batch tensors, to be used as partial with instatiated text_transform"""
     src_batch, tgt_batch = [], []
-    for src_sample, tgt_sample in batch:
+    for src_sample, tgt_sample, *_ in batch:
         src_batch.append(text_transform["ocr"](src_sample))
         tgt_batch.append(text_transform["gs"](tgt_sample))
 
@@ -161,7 +186,7 @@ def collate_fn(text_transform):
     """Function to collate data samples into batch tensors"""
     return partial(collate_fn_with_text_transform, text_transform)
 
-# %% ../nbs/02_error_correction.ipynb 31
+# %% ../nbs/02_error_correction.ipynb 36
 class EncoderRNN(nn.Module):
     def __init__(self, input_size, hidden_size):
         super(EncoderRNN, self).__init__()
@@ -185,7 +210,7 @@ class EncoderRNN(nn.Module):
     def initHidden(self, batch_size, device):
         return torch.zeros(1, batch_size, self.hidden_size, device=device)
 
-# %% ../nbs/02_error_correction.ipynb 32
+# %% ../nbs/02_error_correction.ipynb 37
 class AttnDecoderRNN(nn.Module):
     def __init__(self, hidden_size, output_size, dropout_p=0.1, max_length=11):
         super(AttnDecoderRNN, self).__init__()
@@ -247,7 +272,7 @@ class AttnDecoderRNN(nn.Module):
     def initHidden(self, batch_size, device):
         return torch.zeros(1, batch_size, self.hidden_size, device=device)
 
-# %% ../nbs/02_error_correction.ipynb 33
+# %% ../nbs/02_error_correction.ipynb 38
 class SimpleCorrectionSeq2seq(nn.Module):
     def __init__(
         self,
@@ -357,7 +382,7 @@ class SimpleCorrectionSeq2seq(nn.Module):
 
         return scores, encoder_outputs
 
-# %% ../nbs/02_error_correction.ipynb 36
+# %% ../nbs/02_error_correction.ipynb 41
 def validate_model(model, dataloader, device):
     cum_loss = 0
     cum_examples = 0
@@ -389,7 +414,7 @@ def validate_model(model, dataloader, device):
 
     return cum_loss / cum_examples
 
-# %% ../nbs/02_error_correction.ipynb 44
+# %% ../nbs/02_error_correction.ipynb 49
 class GreedySearchDecoder(nn.Module):
     def __init__(self, model):
         super(GreedySearchDecoder, self).__init__()
@@ -463,7 +488,7 @@ class GreedySearchDecoder(nn.Module):
 
         return all_tokens
 
-# %% ../nbs/02_error_correction.ipynb 46
+# %% ../nbs/02_error_correction.ipynb 51
 def indices2string(indices, itos):
     output = []
     for idxs in indices:
@@ -479,7 +504,7 @@ def indices2string(indices, itos):
         output.append(word)
     return output
 
-# %% ../nbs/02_error_correction.ipynb 48
+# %% ../nbs/02_error_correction.ipynb 53
 def predict_and_convert_to_str(model, dataloader, tgt_vocab, device):
     was_training = model.training
     model.eval()
