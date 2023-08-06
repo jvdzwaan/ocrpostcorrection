@@ -943,9 +943,20 @@ def aggregate_ed_results(csv_file):
     data['ed_diff'] = data['T2_AvgLVDistOriginal'] - data['T2_AvgLVDistCorrected']
     data['%ed_improvement'] = data['ed_diff'] / data['T2_AvgLVDistOriginal'] * 100
 
+    # If `T2_AvgLVDistOriginal` == 0.0 and `T2_AvgLVDistCorrected` > 0, `ed_diff` is a
+    # negative number and `ed_diff`/`T2_AvgLVDistOriginal` = -inf.
+    # The mean of numbers which include -inf is nan.
+    # Therefore, -inf is replaced by -100.0%.
+    data['%ed_improvement'].replace([-np.inf], -100.0, inplace=True)
+
+    # If `T2_AvgLVDistOriginal` == 0.0 and and `T2_AvgLVDistCorrected` == 0.0,
+    # the % improvement is nan. The mean of numbers which include nan is nan. 
+    # So, in this case, the value should be replaced with 0.0.
+    data['%ed_improvement'].fillna(0.0, inplace=True)
+
     return data.groupby("language").mean()[['%ed_improvement']]    
 
-# %% ../nbs/03_utils.ipynb 64
+# %% ../nbs/03_utils.ipynb 65
 def reduce_dataset(dataset, n=5):
     """Return dataset with the first n samples for each split"""
     for split in dataset.keys():

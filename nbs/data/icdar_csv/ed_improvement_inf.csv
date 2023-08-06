@@ -1,0 +1,2 @@
+File;NbTokens;NbErroneousTokens;NbSymbolsConsidered;T1_Precision;T1_Recall;T1_Fmesure;T2_AvgLVDistOriginal;T2_AvgLVDistCorrected
+FR/FR1/115.txt;55;0;242;0.00;0.00;0.00;0.00;0.01
