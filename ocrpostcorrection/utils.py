@@ -344,11 +344,17 @@ class EvalContext:
         for spacePos in re.finditer(r"$|\ ", self.gsAligned):
             tokenEndPos = spacePos.start()
             tokenInOcr = re.sub(
-                self.charExtend, "", self.ocrAligned[lastTokenPos:tokenEndPos]
+                self.charExtend, "", self.ocrAligned[lastTokenPos:tokenEndPos+1]
             )
             tokenInGs = re.sub(
-                self.charExtend, "", self.gsAligned[lastTokenPos:tokenEndPos]
+                self.charExtend, "", self.gsAligned[lastTokenPos:tokenEndPos+1]
             )
+
+            if self.verbose:
+                print(f"Indices aligned: start: {lastTokenPos}, end: {tokenEndPos}")
+                print(f"Token in ocr: '{tokenInOcr}' (aligned: '{self.ocrAligned[lastTokenPos:tokenEndPos+1]}')")
+                print(f"Token in gs: '{tokenInGs}' (aligned: '{self.gsAligned[lastTokenPos:tokenEndPos+1]}')")
+                print('---')
 
             if self.charIgnore in tokenInGs:
                 lastTokenPos = tokenEndPos + 1
@@ -717,7 +723,7 @@ class EvalContext:
         for k in sortedKeysDic:
             print("%s:%s" % (str(k), str(d[k])))
 
-# %% ../nbs/03_utils.ipynb 47
+# %% ../nbs/03_utils.ipynb 48
 def reshape_input_errors(tokenPosErr, evalContext, verbose=False):
     # Store tokens' positions in mem
     tokensPos = [0] + [
@@ -788,7 +794,7 @@ def reshape_input_errors(tokenPosErr, evalContext, verbose=False):
 
     return tokenPosErrReshaped
 
-# %% ../nbs/03_utils.ipynb 54
+# %% ../nbs/03_utils.ipynb 56
 def runEvaluation(
     datasetDirPath,  # path to the dataset directory (ex: r"./dataset_sample")
     pathInputJsonErrorsCorrections,  # # input path to the JSON result (ex: r"./inputErrCor_sample.json"), format given on https://sites.google.com/view/icdar2017-postcorrectionocr/evaluation)
@@ -877,7 +883,7 @@ def runEvaluation(
         # Print results in the console
         print(strRes.replace(";", "\t"))
 
-# %% ../nbs/03_utils.ipynb 55
+# %% ../nbs/03_utils.ipynb 57
 def read_results(csv_file):
     """Read csv with evaluation results"""
     data = pd.read_csv(csv_file, sep=";")
@@ -886,7 +892,7 @@ def read_results(csv_file):
 
     return data
 
-# %% ../nbs/03_utils.ipynb 57
+# %% ../nbs/03_utils.ipynb 59
 def icdar_output2simple_correction_dataset_df(
     output: Dict[str, Dict[str, Dict]], data: Dict[str, Text], dataset: str = "test"
 ) -> pd.DataFrame:
@@ -922,7 +928,7 @@ def icdar_output2simple_correction_dataset_df(
             samples.append(sample)
     return pd.DataFrame(samples)
 
-# %% ../nbs/03_utils.ipynb 61
+# %% ../nbs/03_utils.ipynb 63
 def read_results(csv_file):
     data = pd.read_csv(csv_file, sep=';')
     data['language'] = data.File.apply(lambda x: x[:2])
@@ -956,7 +962,7 @@ def aggregate_ed_results(csv_file):
 
     return data.groupby("language").mean()[['%ed_improvement']]    
 
-# %% ../nbs/03_utils.ipynb 65
+# %% ../nbs/03_utils.ipynb 67
 def reduce_dataset(dataset, n=5):
     """Return dataset with the first n samples for each split"""
     for split in dataset.keys():

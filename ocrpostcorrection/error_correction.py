@@ -2,28 +2,19 @@
 
 # %% auto 0
 __all__ = ['UNK_IDX', 'PAD_IDX', 'BOS_IDX', 'EOS_IDX', 'special_symbols', 'get_tokens_with_OCR_mistakes', 'yield_tokens',
-           'generate_vocabs', 'SimpleCorrectionDataset', 'BertVectorsCorrectionDataset', 'sequential_transforms',
-           'tensor_transform', 'get_text_transform', 'collate_fn_with_text_transform', 'collate_fn', 'EncoderRNN',
-           'AttnDecoderRNN', 'SimpleCorrectionSeq2seq', 'validate_model', 'GreedySearchDecoder', 'indices2string',
+           'generate_vocabs', 'sequential_transforms', 'tensor_transform', 'get_text_transform', 'EncoderRNN',
+           'AttnDecoderRNN', 'SimpleCorrectionSeq2seq', 'GreedySearchDecoder', 'indices2string',
            'predict_and_convert_to_str']
 
 # %% ../nbs/02_error_correction.ipynb 2
 import dataclasses
 import random
-from functools import partial
-from itertools import chain
-from pathlib import Path
-from typing import Dict, Iterable, List
+from typing import Dict, List
 
-import h5py
-import numpy as np
 import pandas as pd
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch import optim
-from torch.nn.utils.rnn import pad_sequence
-from torch.utils.data import Dataset
 from torchtext.vocab import build_vocab_from_iterator
 from tqdm import tqdm
 
@@ -104,45 +95,7 @@ def generate_vocabs(train):
 
     return vocab_transform
 
-# %% ../nbs/02_error_correction.ipynb 16
-class SimpleCorrectionDataset(Dataset):
-    def __init__(self, data, max_len=10):
-        self.ds = (
-            data.query(f"len_ocr <= {max_len}").query(f"len_gs <= {max_len}").copy()
-        )
-        self.ds = self.ds.reset_index(drop=False)
-
-    def __len__(self):
-        return self.ds.shape[0]
-
-    def __getitem__(self, idx):
-        sample = self.ds.loc[idx]
-
-        return [char for char in sample.ocr], [char for char in sample.gs]
-
-# %% ../nbs/02_error_correction.ipynb 22
-class BertVectorsCorrectionDataset(Dataset):
-    def __init__(self, data: pd.DataFrame, bert_vectors_file: Path, split_name: str, max_len: int=11):
-        ds = data.copy()
-        ds.reset_index(drop=True, inplace=True)
-        ds = ds.query(f'len_ocr < {max_len}').query(f'len_gs < {max_len}').copy()
-        ds.reset_index(drop=False, inplace=True)
-        self.ds = ds
-
-        f = h5py.File(bert_vectors_file, "r")
-        self.bert_vectors = f.get(split_name)
-
-    def __len__(self):
-        return self.ds.shape[0]
-
-    def __getitem__(self, idx):
-        sample = self.ds.loc[idx]
-        original_idx = sample["index"]
-        bert_vector = torch.as_tensor(np.array(self.bert_vectors[original_idx]))
-
-        return sample.ocr, sample.gs, bert_vector
-
-# %% ../nbs/02_error_correction.ipynb 27
+# %% ../nbs/02_error_correction.ipynb 18
 def sequential_transforms(*transforms):
     """Helper function to club together sequential operations"""
 
@@ -168,25 +121,7 @@ def get_text_transform(vocab_transform):
         )  # Add BOS/EOS and create tensor
     return text_transform
 
-# %% ../nbs/02_error_correction.ipynb 30
-def collate_fn_with_text_transform(text_transform, batch):
-    """Function to collate data samples into batch tensors, to be used as partial with instatiated text_transform"""
-    src_batch, tgt_batch = [], []
-    for src_sample, tgt_sample, *_ in batch:
-        src_batch.append(text_transform["ocr"](src_sample))
-        tgt_batch.append(text_transform["gs"](tgt_sample))
-
-    src_batch = pad_sequence(src_batch, padding_value=PAD_IDX)
-    tgt_batch = pad_sequence(tgt_batch, padding_value=PAD_IDX)
-
-    return src_batch.to(torch.int64), tgt_batch.to(torch.int64)
-
-
-def collate_fn(text_transform):
-    """Function to collate data samples into batch tensors"""
-    return partial(collate_fn_with_text_transform, text_transform)
-
-# %% ../nbs/02_error_correction.ipynb 36
+# %% ../nbs/02_error_correction.ipynb 23
 class EncoderRNN(nn.Module):
     def __init__(self, input_size, hidden_size):
         super(EncoderRNN, self).__init__()
@@ -210,7 +145,7 @@ class EncoderRNN(nn.Module):
     def initHidden(self, batch_size, device):
         return torch.zeros(1, batch_size, self.hidden_size, device=device)
 
-# %% ../nbs/02_error_correction.ipynb 37
+# %% ../nbs/02_error_correction.ipynb 24
 class AttnDecoderRNN(nn.Module):
     def __init__(self, hidden_size, output_size, dropout_p=0.1, max_length=11):
         super(AttnDecoderRNN, self).__init__()
@@ -272,7 +207,7 @@ class AttnDecoderRNN(nn.Module):
     def initHidden(self, batch_size, device):
         return torch.zeros(1, batch_size, self.hidden_size, device=device)
 
-# %% ../nbs/02_error_correction.ipynb 38
+# %% ../nbs/02_error_correction.ipynb 25
 class SimpleCorrectionSeq2seq(nn.Module):
     def __init__(
         self,
@@ -382,39 +317,7 @@ class SimpleCorrectionSeq2seq(nn.Module):
 
         return scores, encoder_outputs
 
-# %% ../nbs/02_error_correction.ipynb 41
-def validate_model(model, dataloader, device):
-    cum_loss = 0
-    cum_examples = 0
-
-    was_training = model.training
-    model.eval()
-
-    with torch.no_grad():
-        for src, tgt in dataloader:
-            src = src.to(device)
-            tgt = tgt.to(device)
-
-            batch_size = src.size(1)
-
-            encoder_hidden = model.encoder.initHidden(
-                batch_size=batch_size, device=device
-            )
-
-            example_losses, decoder_ouputs = model(src, encoder_hidden, tgt)
-            example_losses = -example_losses
-            batch_loss = example_losses.sum()
-
-            bl = batch_loss.item()
-            cum_loss += bl
-            cum_examples += batch_size
-
-    if was_training:
-        model.train()
-
-    return cum_loss / cum_examples
-
-# %% ../nbs/02_error_correction.ipynb 49
+# %% ../nbs/02_error_correction.ipynb 31
 class GreedySearchDecoder(nn.Module):
     def __init__(self, model):
         super(GreedySearchDecoder, self).__init__()
@@ -488,7 +391,7 @@ class GreedySearchDecoder(nn.Module):
 
         return all_tokens
 
-# %% ../nbs/02_error_correction.ipynb 51
+# %% ../nbs/02_error_correction.ipynb 33
 def indices2string(indices, itos):
     output = []
     for idxs in indices:
@@ -504,7 +407,7 @@ def indices2string(indices, itos):
         output.append(word)
     return output
 
-# %% ../nbs/02_error_correction.ipynb 53
+# %% ../nbs/02_error_correction.ipynb 35
 def predict_and_convert_to_str(model, dataloader, tgt_vocab, device):
     was_training = model.training
     model.eval()
