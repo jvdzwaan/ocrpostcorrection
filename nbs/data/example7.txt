@@ -1,0 +1,3 @@
+[OCR_toInput] regne le neufviesme.
+[OCR_aligned] regne le neuf@viesme.
+[ GS_aligned] regne le neuf viesme.
