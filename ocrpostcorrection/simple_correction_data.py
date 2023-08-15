@@ -17,7 +17,7 @@ from ocrpostcorrection.error_correction import (
     get_tokens_with_OCR_mistakes,
 )
 
-# %% ../nbs/02a_simple_correction_data.ipynb 5
+# %% ../nbs/02a_simple_correction_data.ipynb 6
 class SimpleCorrectionDataset(Dataset):
     def __init__(self, data, max_len=10):
         self.ds = (
@@ -33,7 +33,7 @@ class SimpleCorrectionDataset(Dataset):
 
         return [char for char in sample.ocr], [char for char in sample.gs]
 
-# %% ../nbs/02a_simple_correction_data.ipynb 10
+# %% ../nbs/02a_simple_correction_data.ipynb 11
 def collate_fn_with_text_transform(text_transform, batch):
     """Function to collate data samples into batch tensors, to be used as partial with instatiated text_transform"""
     src_batch, tgt_batch = [], []
@@ -51,7 +51,7 @@ def collate_fn(text_transform):
     """Function to collate data samples into batch tensors"""
     return partial(collate_fn_with_text_transform, text_transform)
 
-# %% ../nbs/02a_simple_correction_data.ipynb 15
+# %% ../nbs/02a_simple_correction_data.ipynb 16
 def validate_model(model, dataloader, device):
     cum_loss = 0
     cum_examples = 0
