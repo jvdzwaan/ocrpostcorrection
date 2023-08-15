@@ -5,6 +5,7 @@ __all__ = ['BertVectorsCorrectionDataset', 'collate_fn_with_text_transform', 'co
 
 # %% ../nbs/02b_bert_vectors_correction_dataset.ipynb 2
 from functools import partial
+from pathlib import Path
 from typing import List
 
 import h5py
