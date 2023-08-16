@@ -12,25 +12,30 @@ import h5py
 import numpy as np
 import pandas as pd
 import torch
-from torch.utils.data import DataLoader
-from tqdm import tqdm
 from loguru import logger
 from torch.nn.utils.rnn import pad_sequence
-from torch.utils.data import Dataset
+from torch.utils.data import DataLoader, Dataset
+from tqdm import tqdm
 
 from ocrpostcorrection.error_correction import (
-    SimpleCorrectionSeq2seq,
     PAD_IDX,
+    SimpleCorrectionSeq2seq,
     generate_vocabs,
     get_text_transform,
 )
 
 # %% ../nbs/02b_bert_vectors_correction_dataset.ipynb 5
 class BertVectorsCorrectionDataset(Dataset):
-    def __init__(self, data: pd.DataFrame, bert_vectors_file: Path, split_name: str, max_len: int=11):
+    def __init__(
+        self,
+        data: pd.DataFrame,
+        bert_vectors_file: Path,
+        split_name: str,
+        max_len: int = 11,
+    ):
         ds = data.copy()
         ds.reset_index(drop=True, inplace=True)
-        ds = ds.query(f'len_ocr < {max_len}').query(f'len_gs < {max_len}').copy()
+        ds = ds.query(f"len_ocr < {max_len}").query(f"len_gs < {max_len}").copy()
         ds.reset_index(drop=False, inplace=True)
         self.ds = ds
 
@@ -208,8 +213,5 @@ def train_model(
                 train_loss_hist.append(train_loss)
 
     # Create train log
-    df = pd.DataFrame(
-        {"train_loss": train_loss_hist, "val_loss": val_loss_hist}
-    )
+    df = pd.DataFrame({"train_loss": train_loss_hist, "val_loss": val_loss_hist})
     return df
-
