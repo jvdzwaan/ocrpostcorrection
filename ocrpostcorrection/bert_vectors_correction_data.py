@@ -4,7 +4,6 @@
 __all__ = ['BertVectorsCorrectionDataset', 'collate_fn_with_text_transform', 'collate_fn', 'validate_model', 'train_model']
 
 # %% ../nbs/02b_bert_vectors_correction_dataset.ipynb 2
-import sys
 from functools import partial
 from pathlib import Path
 from typing import List
@@ -188,7 +187,9 @@ def train_model(
                         logger.info(f"Hit #{num_trial} trial")
                         if num_trial == max_num_trial:
                             logger.info("Early stop!")
-                            sys.exit()
+                            # Create train log
+                            df = pd.DataFrame({"train_loss": train_loss_hist, "val_loss": val_loss_hist})
+                            return df
 
                         # decay lr, and restore from previously best checkpoint
                         lr = optimizer.param_groups[0]["lr"] * lr_decay
