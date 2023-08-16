@@ -81,7 +81,7 @@ def validate_model(model, dataloader, device):
         for src, tgt, encoder_hidden in dataloader:
             src = src.to(device)
             tgt = tgt.to(device)
-            encoder_hidden.to(device)
+            encoder_hidden = encoder_hidden.to(device)
 
             batch_size = src.size(1)
 
@@ -133,7 +133,7 @@ def train_model(
 
             src = src.to(device)
             tgt = tgt.to(device)
-            encoder_hidden.to(device)
+            encoder_hidden = encoder_hidden.to(device)
 
             example_losses, _ = model(src, encoder_hidden, tgt)
             example_losses = -example_losses
