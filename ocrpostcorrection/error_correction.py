@@ -418,7 +418,7 @@ def predict_and_convert_to_str(model, dataloader, tgt_vocab, device):
     output_strings = []
 
     with torch.no_grad():
-        for src, tgt in tqdm(dataloader):
+        for src, tgt, *_ in tqdm(dataloader):
             src = src.to(device)
             tgt = tgt.to(device)
 
