@@ -923,16 +923,16 @@ def icdar_output2simple_correction_dataset_df(
             sample = {}
             parts = token.split(":")
             start_idx = int(parts[0])
-            num_tokens = int(parts[0])
-            for at in text.input_tokens:
+            num_tokens = int(parts[1])
+            for i, at in enumerate(text.input_tokens):
                 if at.start == start_idx:
-                    sample["ocr"] = at.ocr
-                    sample["gs"] = at.gs
+                    sample["ocr"] = " ".join([t.ocr for t in text.input_tokens[i: i+num_tokens]])
+                    sample["gs"] = " ".join([t.gs for t in text.input_tokens[i: i+num_tokens]]).strip()
                     sample["start"] = at.start
                     sample["text"] = key
                     sample["token"] = token
                     sample["len_ocr"] = at.len_ocr
-                    sample["len_gs"] = len(at.gs)
+                    sample["len_gs"] = 0
                     parts = key.split("/")
                     sample["language"] = parts[0]
                     sample["subset"] = parts[1]
