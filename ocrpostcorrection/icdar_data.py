@@ -274,21 +274,24 @@ def generate_data(in_dir: Path) -> Tuple[Dict[str, Text], pd.DataFrame]:
     num_tokens = []
     num_input_tokens = []
 
+    in_files = []
     for language_dir in tqdm(in_dir.iterdir()):
         for text_file in language_dir.rglob("*.txt"):
-            # print(text_file)
-            # print(text_file.relative_to(in_dir))
-            key = str(text_file.relative_to(in_dir))
-            data[key] = process_text(text_file)
+            in_files.append(text_file)
+    in_files.sort()
 
-            language, subset, _ = key.split(os.sep)
+    for text_file in in_files:
+        key = str(text_file.relative_to(in_dir))
+        data[key] = process_text(text_file)
 
-            file_languages.append(language)
-            file_subsets.append(subset)
-            file_names.append(key)
-            scores.append(data[key].score)
-            num_tokens.append(len(data[key].tokens))
-            num_input_tokens.append(len(data[key].input_tokens))
+        language, subset, _ = key.split(os.sep)
+
+        file_languages.append(language)
+        file_subsets.append(subset)
+        file_names.append(key)
+        scores.append(data[key].score)
+        num_tokens.append(len(data[key].tokens))
+        num_input_tokens.append(len(data[key].input_tokens))
     md = pd.DataFrame(
         {
             "language": file_languages,
