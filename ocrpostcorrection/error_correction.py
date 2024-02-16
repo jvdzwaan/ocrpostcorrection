@@ -29,6 +29,7 @@ def get_tokens_with_OCR_mistakes(
         for token in d.tokens:
             if token.ocr.strip() != token.gs.strip():
                 r = dataclasses.asdict(token)
+                r["key"] = key
                 r["language"] = key[:2]
                 r["subset"] = key.split("/")[1]
 
@@ -43,12 +44,15 @@ def get_tokens_with_OCR_mistakes(
         for token in d.tokens:
             if token.ocr.strip() != token.gs.strip():
                 r = dataclasses.asdict(token)
+                r["key"] = key
                 r["language"] = key[:2]
                 r["subset"] = key.split("/")[1]
                 r["dataset"] = "test"
 
                 tokens.append(r)
     tdata = pd.DataFrame(tokens)
+    tdata.sort_values(by=["dataset", "key", "start"], inplace=True)
+    tdata.reset_index(drop=True, inplace=True)
     tdata = _add_update_data_properties(tdata)
 
     return tdata
