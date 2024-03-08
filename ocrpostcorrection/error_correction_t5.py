@@ -6,15 +6,19 @@ __all__ = ['filter_max_len', 'preprocess_function']
 # %% ../nbs/02c_error_correction_t5.ipynb 2
 from typing import Dict
 
-# %% ../nbs/02c_error_correction_t5.ipynb 3
+# %% ../nbs/02c_error_correction_t5.ipynb 6
 def filter_max_len(example: Dict, max_len: int):
     if example["len_ocr"] <= max_len and example["len_gs"] <= max_len:
         return True
     return False
 
-# %% ../nbs/02c_error_correction_t5.ipynb 4
-def preprocess_function(examples, tokenizer):
-    model_inputs = tokenizer(examples["ocr"])
+# %% ../nbs/02c_error_correction_t5.ipynb 8
+def preprocess_function(examples, tokenizer, add_task_prefix: bool=False):
+    input = examples["ocr"]
+    if add_task_prefix:
+        input = [f"{language}: {ocr_str}" for ocr_str, language in zip(examples["ocr"], examples['language'])]
+
+    model_inputs = tokenizer(input)
 
     labels = tokenizer(text_target=examples["gs"])
 
