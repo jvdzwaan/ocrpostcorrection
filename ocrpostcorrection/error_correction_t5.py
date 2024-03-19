@@ -13,10 +13,17 @@ def filter_max_len(example: Dict, max_len: int):
     return False
 
 # %% ../nbs/02c_error_correction_t5.ipynb 8
-def preprocess_function(examples, tokenizer, add_task_prefix: bool=False):
-    input = examples["ocr"]
+def preprocess_function(examples, tokenizer, add_task_prefix: bool=False, context_marker: str=""):
+    if context_marker:
+        input = [
+            f"{before}<{context_marker}>{ocr_str}</{context_marker}>{after}"
+            for before, ocr_str, after in zip(examples["context_before"], examples["ocr"], examples["context_after"])
+        ]
+    else:
+        input = examples["ocr"]
+
     if add_task_prefix:
-        input = [f"{language}: {ocr_str}" for ocr_str, language in zip(examples["ocr"], examples['language'])]
+        input = [f"{language}: {ocr_str}" for ocr_str, language in zip(input, examples['language'])]
 
     model_inputs = tokenizer(input)
 
