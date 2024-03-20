@@ -12,6 +12,7 @@ import random
 from typing import Dict, List
 
 import pandas as pd
+from tqdm import tqdm
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -75,7 +76,7 @@ def get_closest_value(lst: List, value: int) -> int:
 
 def get_context_for_dataset(data: Dict[str, Text], ocr_mistakes: pd.DataFrame, offset: int) -> pd.DataFrame:
     result = []
-    for key, d in data.items():
+    for key, d in tqdm(data.items()):
         token_starts = [t.start for t in d.tokens]
         token_ends = [t.start + t.len_ocr for t in d.tokens]
 
