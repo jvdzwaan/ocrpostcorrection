@@ -103,24 +103,26 @@ def get_OCR_mistakes_in_context(
         ocr_mistakes: pd.DataFrame,
         offset: int
     ) -> pd.DataFrame:
-    new_data = get_context_for_dataset(data, ocr_mistakes, offset)
-    new_data_test = get_context_for_dataset(data_test, ocr_mistakes, offset)
+    train_val_data = ocr_mistakes.query("dataset != 'test'").copy()
+    new_data = get_context_for_dataset(data, train_val_data, offset)
+    test_data = ocr_mistakes.query("dataset == 'test'").copy()
+    new_data_test = get_context_for_dataset(data_test, test_data, offset)
 
     return pd.concat([new_data, new_data_test])
 
-# %% ../nbs/02_error_correction.ipynb 13
+# %% ../nbs/02_error_correction.ipynb 15
 UNK_IDX, PAD_IDX, BOS_IDX, EOS_IDX = 0, 1, 2, 3
 
 special_symbols = ["<unk>", "<pad>", "<bos>", "<eos>"]
 
-# %% ../nbs/02_error_correction.ipynb 14
+# %% ../nbs/02_error_correction.ipynb 16
 def yield_tokens(data, col):
     """Helper function to create vocabulary containing characters"""
     for token in data[col].to_list():
         for char in token:
             yield char
 
-# %% ../nbs/02_error_correction.ipynb 15
+# %% ../nbs/02_error_correction.ipynb 17
 def generate_vocabs(train):
     """Generate ocr and gs vocabularies from the train set"""
     vocab_transform = {}
@@ -138,7 +140,7 @@ def generate_vocabs(train):
 
     return vocab_transform
 
-# %% ../nbs/02_error_correction.ipynb 21
+# %% ../nbs/02_error_correction.ipynb 23
 def sequential_transforms(*transforms):
     """Helper function to club together sequential operations"""
 
@@ -164,7 +166,7 @@ def get_text_transform(vocab_transform):
         )  # Add BOS/EOS and create tensor
     return text_transform
 
-# %% ../nbs/02_error_correction.ipynb 26
+# %% ../nbs/02_error_correction.ipynb 28
 class EncoderRNN(nn.Module):
     def __init__(self, input_size, hidden_size):
         super(EncoderRNN, self).__init__()
@@ -188,7 +190,7 @@ class EncoderRNN(nn.Module):
     def initHidden(self, batch_size, device):
         return torch.zeros(1, batch_size, self.hidden_size, device=device)
 
-# %% ../nbs/02_error_correction.ipynb 27
+# %% ../nbs/02_error_correction.ipynb 29
 class AttnDecoderRNN(nn.Module):
     def __init__(self, hidden_size, output_size, dropout_p=0.1, max_length=11):
         super(AttnDecoderRNN, self).__init__()
@@ -250,7 +252,7 @@ class AttnDecoderRNN(nn.Module):
     def initHidden(self, batch_size, device):
         return torch.zeros(1, batch_size, self.hidden_size, device=device)
 
-# %% ../nbs/02_error_correction.ipynb 28
+# %% ../nbs/02_error_correction.ipynb 30
 class SimpleCorrectionSeq2seq(nn.Module):
     def __init__(
         self,
@@ -360,7 +362,7 @@ class SimpleCorrectionSeq2seq(nn.Module):
 
         return scores, encoder_outputs
 
-# %% ../nbs/02_error_correction.ipynb 32
+# %% ../nbs/02_error_correction.ipynb 34
 def indices2string(indices, itos):
     output = []
     for idxs in indices:
