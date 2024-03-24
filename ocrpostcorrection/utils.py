@@ -912,7 +912,7 @@ def icdar_output2simple_correction_dataset_df(
     output: Dict[str, Dict[str, Dict]], data: Dict[str, Text], dataset: str = "test"
 ) -> pd.DataFrame:
     """Convert the icdar data error detection output to input for SimpleCorrectionDataset
-    
+
     Because gold standard for input_tokens is not available, the dataset dataframe cannot
     be used for evaluation anymore.
     """
@@ -926,6 +926,7 @@ def icdar_output2simple_correction_dataset_df(
             num_tokens = int(parts[1])
             for i, at in enumerate(text.input_tokens):
                 if at.start == start_idx:
+                    sample['key'] = key
                     sample["ocr"] = " ".join([t.ocr for t in text.input_tokens[i: i+num_tokens]])
                     sample["gs"] = " ".join([t.gs for t in text.input_tokens[i: i+num_tokens]]).strip()
                     sample["start"] = at.start
@@ -971,11 +972,11 @@ def aggregate_ed_results(csv_file):
     data['%ed_improvement'].replace([-np.inf], -100.0, inplace=True)
 
     # If `T2_AvgLVDistOriginal` == 0.0 and and `T2_AvgLVDistCorrected` == 0.0,
-    # the % improvement is nan. The mean of numbers which include nan is nan. 
+    # the % improvement is nan. The mean of numbers which include nan is nan.
     # So, in this case, the value should be replaced with 0.0.
     data['%ed_improvement'].fillna(0.0, inplace=True)
 
-    return data.groupby("language").mean()[['%ed_improvement']]    
+    return data.groupby("language").mean()[['%ed_improvement']]
 
 # %% ../nbs/03_utils.ipynb 70
 def reduce_dataset(dataset, n=5):
