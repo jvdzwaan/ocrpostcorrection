@@ -77,8 +77,8 @@ def get_closest_value(lst: List, value: int) -> int:
 def get_context_for_dataset(data: Dict[str, Text], ocr_mistakes: pd.DataFrame, offset: int) -> pd.DataFrame:
     result = []
     for key, d in tqdm(data.items()):
-        token_starts = [t.start for t in d.tokens]
-        token_ends = [t.start + t.len_ocr for t in d.tokens]
+        token_starts = [t.start for t in d.input_tokens]
+        token_ends = [t.start + t.len_ocr for t in d.input_tokens]
 
         for _i, row in ocr_mistakes[ocr_mistakes.key == key].iterrows():
             token_start = row["start"]
