@@ -18,7 +18,7 @@ def filter_max_len(example: Dict, max_len: int):
 def filter_len_ocr_mistake_in_context(data: pd.DataFrame, context_offset: int) -> pd.DataFrame:
     if context_offset:
         # Filter samples on length (to prevent using too much GPU memory)
-        data = data.query(f"len_ocr_mistake_in_context <= {context_offset * 10}").copy()
+        data = data.query(f"len_mistake_in_context <= {context_offset * 10}").copy()
         logger.info(f"Max length of input samples: {data.len_mistake_in_context.max()}")
     return data
 
