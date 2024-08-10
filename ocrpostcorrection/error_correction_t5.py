@@ -8,6 +8,8 @@ from typing import Dict
 
 import pandas as pd
 
+from loguru import logger
+
 # %% ../nbs/02c_error_correction_t5.ipynb 6
 def filter_max_len(example: Dict, max_len: int):
     if example["len_ocr"] <= max_len and example["len_gs"] <= max_len:
