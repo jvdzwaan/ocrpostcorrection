@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "ocrpostcorrection"
+name="ocrpostcorrection"
 version = "0.1.0"
 description = ""
 authors = ["Janneke van der Zwaan <jannekevdzwaan@gmail.com>"]
