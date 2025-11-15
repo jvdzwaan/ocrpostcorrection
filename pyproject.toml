@@ -14,13 +14,13 @@ loguru = "^0.6.0"
 torch = {version = "==2.3.0"}
 torchtext = "^0.18.0"
 tqdm = "^4.65.0"
-transformers = "^4.26.1"
 isort = "^5.12.0"
 mypy = "^1.1.1"
 h5py = "^3.9.0"
 numpy = "^1.17"
 pandas = "^2.3.3"
 pyarrow = "20.0.0"
+transformers = "^4.57.1"
 
 [tool.poetry.group.dev.dependencies]
 nbdev = "^2.3.12"
