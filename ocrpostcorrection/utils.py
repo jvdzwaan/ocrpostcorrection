@@ -956,7 +956,7 @@ def read_results(csv_file):
 def aggregate_results(csv_file):
     data = read_results(csv_file)
 
-    return data.groupby("language").mean()[["T1_Precision", "T1_Recall", "T1_Fmesure"]]
+    return data.groupby("language").mean(numeric_only=True)[["T1_Precision", "T1_Recall", "T1_Fmesure"]]
 
 
 def aggregate_ed_results(csv_file):
@@ -976,7 +976,7 @@ def aggregate_ed_results(csv_file):
     # So, in this case, the value should be replaced with 0.0.
     data['%ed_improvement'].fillna(0.0, inplace=True)
 
-    return data.groupby("language").mean()[['%ed_improvement']]
+    return data.groupby("language").mean(numeric_only=True)[['%ed_improvement']]
 
 # %% ../nbs/03_utils.ipynb 70
 def reduce_dataset(dataset, n=5):
